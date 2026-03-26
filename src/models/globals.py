@@ -8,7 +8,7 @@ label_logo = sous_titre1 = trait_accueil = sous_titre2 = btn_simu = None
 
 #_____________GESTION DU BACK END (CALL API)_________________________
 # --- INFOS UTILISATEURS ---
-utilisateur_actuel = None
+utilisateur_actuel = None 
 
 
 # --- GESTION DES STOCKS --- IL FAUDRA REFLECHIR AVEC LA PARTIE BACK END ET TOUT

@@ -43,7 +43,7 @@ def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
             var_qte.set(f"+ {qte_interne}")
             relancer_timer()
 
-    # --- 1. HEADER (Titre + Bouton X) ---
+    # --- 1. HEADER---
     ctk.CTkLabel(
         fenetre, text=f"Configuration : {nom_item}", 
         font=("Segoe Print", 15, "bold"), text_color="black", anchor="w"
@@ -56,7 +56,6 @@ def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
     ).place(x=350, y=15, anchor="ne") 
 
     # --- 2. LOGIQUE DYNAMIQUE (IMAGE & DESCRIPTION) ---
-    #base_path = r"C:\Users\loish\.vscode\SmartLock-IHM\assets\images"
     base_path = r"C:\Users\loish\.vscode\SmartLock-IHM\images"
     nom_item_upper = nom_item.upper()
     
@@ -86,7 +85,6 @@ def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
         print(f"Erreur : Impossible de charger {chemin_complet} -> {e}")
         photo_item = None
 
-    # --- CADRE PHOTO CORRIGÉ (Blanc + Bordure douce) ---
     cadre_photo = ctk.CTkFrame(
         fenetre, width=150, height=180, corner_radius=15, 
         fg_color="white", border_width=1, border_color="#E0E0E0"
@@ -102,7 +100,6 @@ def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
     ctk.CTkLabel(fenetre, text=f"Reste : {stock_disponible} g", font=("Arial", 14, "bold"), text_color="black").place(x=190, y=95)
     ctk.CTkLabel(fenetre, text="Quantité :", font=("Arial", 14), text_color="black").place(x=190, y=130)
 
-    # Cadre sélecteur transparent pour ne pas faire de tâche grise
     cadre_selecteur = ctk.CTkFrame(fenetre, width=130, height=50, corner_radius=10, fg_color="transparent")
     cadre_selecteur.place(x=190, y=160)
 
@@ -120,7 +117,7 @@ def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
         font=("Arial", 18, "bold"), command=lambda: modifier_quantite(1)
     ).place(x=90, y=5)
 
-    # --- 4. SECTION DESCRIPTION (Dynamique) ---
+    # --- 4. SECTION DESCRIPTION ---
     label_desc = ctk.CTkLabel(
         fenetre, 
         text=f"Propriétés : {desc_text}", 
