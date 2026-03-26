@@ -1,8 +1,7 @@
-# main.py
 import customtkinter as ctk
 from src.models import globals as g
 from src.views.home_view import setup_home_screen, reset_timer
-
+from src.logic.api_service import initialiser_stocks
 
 def main():
     # --- CONFIGURATION FENÊTRE PRINCIPALE ---
@@ -13,8 +12,12 @@ def main():
     fenetre.configure(fg_color="white")
     fenetre.resizable(False, False)
 
-    # --- INITIALISATION ---
-    # On charge les widgets de l'accueil
+    # --- INITIALISATION API ---
+    print("Démarrage : Synchronisation avec le serveur...")
+    initialiser_stocks()
+
+    # --- INITIALISATION IHM ---
+
     setup_home_screen(fenetre)
 
     # Lancer le timer d'inactivité initial
@@ -25,5 +28,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#r'fkrokr

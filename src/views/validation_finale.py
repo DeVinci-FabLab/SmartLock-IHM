@@ -19,8 +19,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     for widget in fenetre.winfo_children():
         widget.destroy()
 
-    # --- SÉCURITÉ ANTI-DÉPASSEMENT ---
-    # On vérifie chaque item du panier avant l'affichage
+    # --- SÉCURITÉ ANTI-DÉPASSEMENT --
     for nom in list(g.panier.keys()):
         stock_max = g.stocks.get(nom, 0)
         if g.panier[nom] > stock_max:
@@ -30,7 +29,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     ctk.CTkLabel(fenetre, text="Validation de la sélection", font=("Segoe Print", 18, "bold"), text_color="black").place(relx=0.5, y=35, anchor="center")
     ctk.CTkFrame(fenetre, height=2, width=300, fg_color="#EEEEEE").place(relx=0.5, y=60, anchor="center")
 
-    # --- ZONE SCROLLABLE (MODIFIÉE) ---
+    # --- ZONE SCROLLABLE ---
     scroll_container = ctk.CTkScrollableFrame(
         fenetre, 
         width=350, 

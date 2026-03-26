@@ -56,7 +56,8 @@ def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
     ).place(x=350, y=15, anchor="ne") 
 
     # --- 2. LOGIQUE DYNAMIQUE (IMAGE & DESCRIPTION) ---
-    base_path = r"C:\Users\loish\.vscode\SmartLock-IHM\assets\images"
+    #base_path = r"C:\Users\loish\.vscode\SmartLock-IHM\assets\images"
+    base_path = r"C:\Users\loish\.vscode\SmartLock-IHM\images"
     nom_item_upper = nom_item.upper()
     
     # Dictionnaire des descriptions

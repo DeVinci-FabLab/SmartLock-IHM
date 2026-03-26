@@ -2,6 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 import os
 from src.models import globals as g
+from src.logic.api_service import identifier_utilisateur, commander_ouverture_relais
 
 # --- FONCTIONS DE LOGIQUE ---
 
@@ -15,15 +16,33 @@ def reset_timer(fenetre, event=None):
     g.timer_id = fenetre.after(30000, lambda: fermer_fenetre(fenetre))
     print("Chrono Accueil réinitialisé !")
 
-def valider_badge(fenetre):
+def tentative_connexion(fenetre):
+    """Gère le badgeage ou la simulation"""
+    uid_test = "123456789" # ID envoyé au serveur
+    
+    # --- BLOC DE TEST (A supprimer quand j aurais les URL) ---
+    print("MODE TEST : On force l'identification pour bypasser l'erreur API.")
+    g.utilisateur_actuel = "Johnny" 
+    commander_ouverture_relais()   
+    passer_a_la_navigation(fenetre)
+    return 
+
+    # --- CODE RÉEL (Sera utilisé avec les vraies URL) ---
+    if identifier_utilisateur(uid_test):
+        commander_ouverture_relais()
+        passer_a_la_navigation(fenetre)
+    else:
+        g.sous_titre2.configure(text="Badge inconnu !", text_color="red")
+        fenetre.after(2000, lambda: g.sous_titre2.configure(text="Badgez pour continuer", text_color="black"))
+
+def passer_a_la_navigation(fenetre):
+    """Nettoie l'écran et lance la navigation"""
     if g.timer_id:
         fenetre.after_cancel(g.timer_id)
         g.timer_id = None
 
     fenetre.unbind("<Button-1>")
 
-    # --- NETTOYAGE RADICAL ---
-    # On détruit tout pour éviter que les boutons de l'accueil restent en mémoire
     for widget in fenetre.winfo_children():
         widget.destroy()
 
@@ -36,12 +55,12 @@ def valider_badge(fenetre):
     )
 
 def revenir_accueil(fenetre):
+    """Reset complet pour l'utilisateur suivant"""
     print("Déconnexion : Retour accueil.")
     
-    # --- 1. LE FIX : PANIER DOIT ÊTRE UN DICTIONNAIRE ---
     g.panier = {} 
+    g.utilisateur_actuel = None 
 
-    # --- 2. NETTOYAGE COMPLET ---
     if g.timer_id:
         fenetre.after_cancel(g.timer_id)
         g.timer_id = None
@@ -49,15 +68,15 @@ def revenir_accueil(fenetre):
     for widget in fenetre.winfo_children():
         widget.destroy()
 
-    # --- 3. RECONSTRUCTION DE L'ACCUEIL ---
     setup_home_screen(fenetre)
 
 # --- INITIALISATION DE L'ÉCRAN D'ACCUEIL ---
 
 def setup_home_screen(fenetre):
     fenetre.configure(fg_color="white")
-    img_path = os.path.join('assets', 'images', 'logo_FabLab.png')
     
+    img_path = os.path.join('images', 'logo_FabLab.png')
+
     try:
         img_pil = Image.open(img_path)
         photo_petite = ctk.CTkImage(
@@ -82,10 +101,10 @@ def setup_home_screen(fenetre):
     g.btn_simu = ctk.CTkButton(
         fenetre, text="SIMULER BADGE", width=100, height=25, 
         font=("Arial", 10), fg_color="gray70", hover_color="gray50",
-        command=lambda: valider_badge(fenetre)
+        command=lambda: tentative_connexion(fenetre)
     )
     g.btn_simu.place(relx=0.95, rely=0.95, anchor="se")
     
-    # Réactivation du timer
+    # Timer d'inactivité
     fenetre.bind("<Button-1>", lambda e: reset_timer(fenetre, e))
     reset_timer(fenetre)

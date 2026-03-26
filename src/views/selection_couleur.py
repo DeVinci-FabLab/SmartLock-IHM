@@ -2,15 +2,20 @@ import customtkinter as ctk
 from src.models import globals as g
 
 def ecran_choix_couleur(fenetre, materiau, revenir_callback, relancer_nav_callback):
-    # 1. On nettoie l'affichage de la navigation
+    # 1. Nettoyage de sécurité initial
     for widget in fenetre.winfo_children():
-        widget.place_forget()
+        try:
+            widget.place_forget()
+        except:
+            pass
     
-    # --- GESTION DU TIMER (CORRIGÉ : pointe vers relancer_nav_callback) ---
+    # --- GESTION DU TIMER ---
     if g.timer_id:
-        fenetre.after_cancel(g.timer_id)
+        try:
+            fenetre.after_cancel(g.timer_id)
+        except:
+            pass
     
-    # On définit une fonction de sortie automatique vers la NAVIGATION
     def auto_retour_navigation():
         nettoyer_ecran_couleur()
         relancer_nav_callback()
@@ -25,17 +30,22 @@ def ecran_choix_couleur(fenetre, materiau, revenir_callback, relancer_nav_callba
         g.bouton_filament2, g.bouton_filament3, g.bouton_electronique1, g.bouton_electronique2,
         g.btn_valider, g.btn_voir_panier 
     ]
+    
     for w in widgets_a_effacer:
-        if w is not None:
-            w.place_forget()
+        if w is not None and w.winfo_exists():
+            try:
+                w.place_forget()
+            except:
+                pass
 
     # 2. Titre de l'écran
     g.titre_couleur = ctk.CTkLabel(fenetre, text=f"Choisir Couleur : {materiau}", font=("Segoe Print", 16, "bold"), text_color="black")
     g.titre_couleur.place(relx=0.5, y=50, anchor="center")
 
-    # --- LOGIQUE VISUELLE : Détermination des couleurs selon le panier ---
+    # --- LOGIQUE VISUELLE ---
     def get_color(color_name):
         full_name = f"{materiau} {color_name}"
+        # On vérifie si l'item est dans le dictionnaire panier
         return "#7CDD81" if any(item.startswith(full_name) for item in g.panier) else None
 
     c_rouge = get_color("Rouge") or "#E89595"
@@ -48,7 +58,8 @@ def ecran_choix_couleur(fenetre, materiau, revenir_callback, relancer_nav_callba
     # --- FONCTIONS DE CLIC ---
     def clic_couleur(couleur):
         if g.timer_id:
-            fenetre.after_cancel(g.timer_id)
+            try: fenetre.after_cancel(g.timer_id)
+            except: pass
         valider_choix_couleur(materiau, couleur, relancer_nav_callback)
 
     # 3. Boutons couleurs
@@ -86,21 +97,23 @@ def ecran_choix_couleur(fenetre, materiau, revenir_callback, relancer_nav_callba
     from src.views.vue_panier import ouvrir_vue_panier
     def voir_panier():
         if g.timer_id:
-            fenetre.after_cancel(g.timer_id)
+            try: fenetre.after_cancel(g.timer_id)
+            except: pass
         ouvrir_vue_panier(fenetre, lambda: ecran_choix_couleur(fenetre, materiau, revenir_callback, relancer_nav_callback))
 
-    g.btn_voir_panier = ctk.CTkButton(
+    g.btn_voir_panier_couleur = ctk.CTkButton(
         fenetre, text="Voir Panier", width=200, height=40,
         fg_color="#E9F904", hover_color="#D4E404", text_color="black",
         font=("Arial", 12, "bold"),
         command=voir_panier
     )
-    g.btn_voir_panier.place(relx=0.5, y=420, anchor="center")
+    g.btn_voir_panier_couleur.place(relx=0.5, y=420, anchor="center")
 
     # 5. Bouton Annuler 
     def annuler():
         if g.timer_id:
-            fenetre.after_cancel(g.timer_id)
+            try: fenetre.after_cancel(g.timer_id)
+            except: pass
         nettoyer_ecran_couleur()
         relancer_nav_callback()
 
@@ -120,8 +133,11 @@ def nettoyer_ecran_couleur():
     widgets = [
         g.titre_couleur, g.btn_rouge, g.btn_bleu, g.btn_vert, 
         g.btn_jaune, g.btn_orange, g.btn_gris, 
-        g.btn_voir_panier, g.btn_annuler_couleur
+        g.btn_voir_panier_couleur, g.btn_annuler_couleur
     ]
     for w in widgets:
-        if w is not None:
-            w.place_forget()
+        if w is not None and w.winfo_exists():
+            try:
+                w.place_forget()
+            except:
+                pass

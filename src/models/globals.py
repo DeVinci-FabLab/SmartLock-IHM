@@ -6,6 +6,11 @@ panier = {}
 # Accueil
 label_logo = sous_titre1 = trait_accueil = sous_titre2 = btn_simu = None
 
+#_____________GESTION DU BACK END (CALL API)_________________________
+# --- INFOS UTILISATEURS ---
+utilisateur_actuel = None
+
+
 # --- GESTION DES STOCKS --- IL FAUDRA REFLECHIR AVEC LA PARTIE BACK END ET TOUT
 stocks = {
     # FILAMENTS
@@ -13,15 +18,22 @@ stocks = {
     "PETG Rouge": 10, "PETG Bleu": 10, "PETG Vert": 10, "PETG Jaune": 10, "PETG Orange": 10, "PETG Gris": 10,
     "ASA Rouge": 10, "ASA Bleu": 10, "ASA Vert": 10, "ASA Jaune": 10, "ASA Orange": 10, "ASA Gris": 10,
 
-    # TENDANCES (Ajoute-les pour éviter le stock à 0)
+    # TENDANCES 
     "Item 1": 10, 
     "Item 2": 10, 
     "Item 3": 10,
 
-    # ELECTRONIQUE (Ajoute-les aussi)
+    # ELECTRONIQUE 
     "driver": 10,
     "moteur": 10
 }
+# --- ÉLÉMENTS PANIER (CRITIQUE) ---
+dict_widgets_panier = {} 
+cadre_liste = None
+btn_retour_panier = None
+
+#_____________FIN GESTION DU BACK END (CALL API)_________________________
+
 
 # --- ÉLÉMENTS DE NAVIGATION ---
 titre_nav = trait_nav = btn_retour = btn_valider = None
@@ -39,5 +51,3 @@ cadre_tendances = cadre_filaments = cadre_elec = None
 titre_couleur = btn_annuler_couleur = None
 btn_rouge = btn_bleu = btn_vert = btn_jaune = btn_orange = btn_gris = None
 
-# --- ÉLÉMENTS PANIER ---
-cadre_liste = btn_retour_panier = None
