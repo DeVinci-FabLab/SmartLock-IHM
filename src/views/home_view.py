@@ -2,6 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 import os
 from src.models import globals as g
+from src.logic.api_service import identifier_utilisateur, initialiser_stocks
 
 # --- FONCTIONS DE LOGIQUE ---
 
@@ -16,17 +17,22 @@ def reset_timer(fenetre, event=None):
     print("Chrono Accueil réinitialisé !")
 
 def valider_badge(fenetre):
+    # --- CONNEXION API ---
+    uid_simule = "12345"
+    identifier_utilisateur(uid_simule) 
+    initialiser_stocks()
+
     if g.timer_id:
         fenetre.after_cancel(g.timer_id)
         g.timer_id = None
 
     fenetre.unbind("<Button-1>")
 
-    # --- NETTOYAGE RADICAL ---
-    # On détruit tout pour éviter que les boutons de l'accueil restent en mémoire
+    # --- NETTOYAGE ---
     for widget in fenetre.winfo_children():
         widget.destroy()
 
+    # --- FIX IMPORT  ---
     from src.components.navigation_view import ecran_navigation
     
     ecran_navigation(
@@ -37,11 +43,9 @@ def valider_badge(fenetre):
 
 def revenir_accueil(fenetre):
     print("Déconnexion : Retour accueil.")
-    
-    # --- 1. LE FIX : PANIER DOIT ÊTRE UN DICTIONNAIRE ---
     g.panier = {} 
+    g.utilisateur_actuel = "Utilisateur"
 
-    # --- 2. NETTOYAGE COMPLET ---
     if g.timer_id:
         fenetre.after_cancel(g.timer_id)
         g.timer_id = None
@@ -49,14 +53,16 @@ def revenir_accueil(fenetre):
     for widget in fenetre.winfo_children():
         widget.destroy()
 
-    # --- 3. RECONSTRUCTION DE L'ACCUEIL ---
     setup_home_screen(fenetre)
 
 # --- INITIALISATION DE L'ÉCRAN D'ACCUEIL ---
 
 def setup_home_screen(fenetre):
     fenetre.configure(fg_color="white")
-    img_path = os.path.join('assets', 'images', 'logo_FabLab.png')
+
+    current_dir = os.path.dirname(os.path.abspath(__file__)) # src/views
+    project_root = os.path.dirname(os.path.dirname(current_dir)) # SmartLock-IHM
+    img_path = os.path.join(project_root, 'assets', 'images', 'logo_FabLab.png')
     
     try:
         img_pil = Image.open(img_path)
@@ -65,7 +71,8 @@ def setup_home_screen(fenetre):
             size=(int(img_pil.width / 1.7), int(img_pil.height / 1.7))
         )
         g.label_logo = ctk.CTkLabel(fenetre, image=photo_petite, text="")
-    except:
+    except Exception as e:
+        print(f"⚠️ Erreur chargement logo ({img_path}): {e}")
         g.label_logo = ctk.CTkLabel(fenetre, text="Logo Introuvable", text_color="red")
 
     g.label_logo.place(relx=0.5, y=165, anchor="center")
@@ -86,6 +93,5 @@ def setup_home_screen(fenetre):
     )
     g.btn_simu.place(relx=0.95, rely=0.95, anchor="se")
     
-    # Réactivation du timer
     fenetre.bind("<Button-1>", lambda e: reset_timer(fenetre, e))
     reset_timer(fenetre)

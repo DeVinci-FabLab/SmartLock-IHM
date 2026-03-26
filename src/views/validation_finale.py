@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from src.models import globals as g
+from src.logic.api_service import enregistrer_transaction
 
 def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     fenetre.configure(fg_color="white")
@@ -20,7 +21,6 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
         widget.destroy()
 
     # --- SÉCURITÉ ANTI-DÉPASSEMENT ---
-    # On vérifie chaque item du panier avant l'affichage
     for nom in list(g.panier.keys()):
         stock_max = g.stocks.get(nom, 0)
         if g.panier[nom] > stock_max:
@@ -30,7 +30,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     ctk.CTkLabel(fenetre, text="Validation de la sélection", font=("Segoe Print", 18, "bold"), text_color="black").place(relx=0.5, y=35, anchor="center")
     ctk.CTkFrame(fenetre, height=2, width=300, fg_color="#EEEEEE").place(relx=0.5, y=60, anchor="center")
 
-    # --- ZONE SCROLLABLE (MODIFIÉE) ---
+    # --- ZONE SCROLLABLE ---
     scroll_container = ctk.CTkScrollableFrame(
         fenetre, 
         width=350, 
@@ -45,7 +45,10 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
 
     def dessiner_un_article(nom_article, index_ligne):
         if nom_article in g.dict_widgets_panier:
-            g.dict_widgets_panier[nom_article].destroy()
+            try:
+                g.dict_widgets_panier[nom_article].destroy()
+            except:
+                pass
 
         qte_choisie = g.panier.get(nom_article, 0)
         stock_actuel = g.stocks.get(nom_article, 0)
@@ -62,6 +65,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
         ligne_haut = ctk.CTkFrame(inner_container, fg_color="transparent")
         ligne_haut.pack(fill="x")
 
+        # Bouton Supprimer
         ctk.CTkButton(ligne_haut, text="🗑", width=30, height=30, fg_color="transparent", text_color="#E74C3C", font=("Arial", 18),
                       command=lambda: supprimer_article(nom_article)).pack(side="left")
 
@@ -84,7 +88,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
             else: 
                 dessiner_un_article(n, idx)
 
-        # Boutons de modification
+        # Boutons + / -
         ctk.CTkButton(btn_frame, text="-", width=40, height=40, fg_color="transparent", text_color="black", 
                       command=lambda: modif_qty(nom_article, -1, index_ligne)).pack(side="left")
         
@@ -124,9 +128,20 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
                   command=relancer_nav_callback).place(x=20, y=475)
 
     def action_valider():
-        from src.views.acces_physique import ouvrir_ecran_physique
-        if g.timer_id: fenetre.after_cancel(g.timer_id)
-        ouvrir_ecran_physique(fenetre, relancer_nav_callback)
+        if g.panier:
+            reussite = enregistrer_transaction(g.panier)
+            if reussite:
+                print("Transaction envoyée à l'API avec succès.")
+            else:
+                print("⚠️ Erreur lors de l'enregistrement de la transaction.")
+
+        try:
+            from src.views.acces_physique import ouvrir_ecran_physique
+            if g.timer_id: 
+                fenetre.after_cancel(g.timer_id)
+            ouvrir_ecran_physique(fenetre, relancer_nav_callback)
+        except ImportError:
+            print("⚠️ Erreur : src.views.acces_physique introuvable.")
 
     ctk.CTkButton(fenetre, text="Valider & Ouvrir", width=150, height=45, corner_radius=15, fg_color="#2ECC71", text_color="black", font=("Arial", 14, "bold"),
                   command=action_valider).place(x=190, y=475)

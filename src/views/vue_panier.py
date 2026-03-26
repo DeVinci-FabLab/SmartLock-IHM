@@ -10,12 +10,11 @@ def ouvrir_vue_panier(fenetre, relancer_nav_callback):
             widget.destroy()
         relancer_nav_callback() 
 
-    # On annule l'ancien et on lance 90s
     if g.timer_id:
         fenetre.after_cancel(g.timer_id)
     g.timer_id = fenetre.after(90000, auto_logout)
 
-    # 1. NETTOYAGE COMPLET (On détruit tout au lieu de cacher)
+    # 1. NETTOYAGE COMPLET
     for widget in fenetre.winfo_children():
         widget.destroy()
 
@@ -27,7 +26,7 @@ def ouvrir_vue_panier(fenetre, relancer_nav_callback):
         text_color="#2C3E50"
     ).place(relx=0.5, y=35, anchor="center")
 
-    # 3. CADRE SCROLLABLE (Modifié pour le tactile)
+    # 3. CADRE SCROLLABLE 
     g.cadre_liste = ctk.CTkScrollableFrame(
         fenetre, 
         width=300, 
@@ -37,8 +36,8 @@ def ouvrir_vue_panier(fenetre, relancer_nav_callback):
         border_color="#E0E0E0",
         label_text="Articles sélectionnés",
         label_font=("Arial", 12, "bold"),
-        scrollbar_button_color="#D0D0D0",      # Couleur barre tactile
-        scrollbar_button_hover_color="#A0A0A0" # Couleur barre pression
+        scrollbar_button_color="#D0D0D0",      
+        scrollbar_button_hover_color="#A0A0A0" 
     )
     g.cadre_liste.place(relx=0.5, y=205, anchor="center")
 
