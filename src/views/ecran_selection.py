@@ -8,6 +8,7 @@ import os
 
 def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
     fenetre.configure(fg_color="white")
+    W, H = g.SW, g.SH
 
     def nettoyer_et_quitter():
         for widget in fenetre.winfo_children():
@@ -31,16 +32,26 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
             var_qte.set(f"+{qte_interne}")
             reset_inactivite(fenetre, nettoyer_et_quitter)
 
+    fs = int(H * 0.022)
+    fs_title = int(H * 0.026)
+    photo_w = int(W * 0.38)
+    photo_h = int(H * 0.47)
+    x_photo = int(W * 0.04)
+    y_photo = int(H * 0.15)
+    x_info  = int(W * 0.47)
+
     ctk.CTkLabel(
         fenetre, text=f"Configuration : {nom_item}",
-        font=("Segoe Print", 14, "bold"), text_color="black"
-    ).place(x=20, y=20)
+        font=("Segoe Print", fs_title, "bold"), text_color="black"
+    ).place(x=int(W * 0.04), y=int(H * 0.04))
 
     ctk.CTkButton(
-        fenetre, text="✕", width=32, height=32, corner_radius=12,
-        fg_color="#E74C3C", hover_color="#C0392B", text_color="white",
-        font=("Arial", 13, "bold"), command=nettoyer_et_quitter
-    ).place(x=350, y=15, anchor="ne")
+        fenetre, text="✕",
+        width=int(W * 0.06), height=int(H * 0.055),
+        corner_radius=12, fg_color="#E74C3C", hover_color="#C0392B",
+        text_color="white", font=("Arial", fs_title, "bold"),
+        command=nettoyer_et_quitter
+    ).place(x=int(W * 0.97), y=int(H * 0.03), anchor="ne")
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(current_dir))
@@ -72,66 +83,67 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
 
     try:
         img_pil = Image.open(os.path.join(base_path, fichier))
-        photo_item = ctk.CTkImage(light_image=img_pil, size=(140, 170))
+        photo_item = ctk.CTkImage(light_image=img_pil, size=(photo_w, photo_h))
     except:
         photo_item = None
 
     cadre_photo = ctk.CTkFrame(
-        fenetre, width=150, height=180, corner_radius=12,
-        fg_color="white", border_width=1, border_color="#E0E0E0"
+        fenetre, width=photo_w + 20, height=photo_h + 20,
+        corner_radius=12, fg_color="white", border_width=1, border_color="#E0E0E0"
     )
-    cadre_photo.place(x=20, y=85)
+    cadre_photo.place(x=x_photo, y=y_photo)
 
     if photo_item:
         ctk.CTkLabel(cadre_photo, image=photo_item, text="").place(relx=0.5, rely=0.5, anchor="center")
     else:
-        ctk.CTkLabel(cadre_photo, text="photo", font=("Arial", 14, "italic"), text_color="gray").place(relx=0.5, rely=0.5, anchor="center")
+        ctk.CTkLabel(cadre_photo, text="photo", font=("Arial", fs, "italic"), text_color="gray").place(relx=0.5, rely=0.5, anchor="center")
 
     unite = "g" if any(x in nom_item.upper() for x in ["PLA", "PETG", "ASA"]) else "pce"
+
     ctk.CTkLabel(
         fenetre, text=f"Reste : {stock_disponible} {unite}",
-        font=("Arial", 13, "bold"), text_color="black"
-    ).place(x=190, y=95)
-    ctk.CTkLabel(
-        fenetre, text="Quantité :", font=("Arial", 13), text_color="black"
-    ).place(x=190, y=130)
+        font=("Arial", fs, "bold"), text_color="black"
+    ).place(x=x_info, y=int(H * 0.17))
 
-    cadre_selecteur = ctk.CTkFrame(
-        fenetre, width=130, height=50, corner_radius=12, fg_color="#F2F2F2"
-    )
-    cadre_selecteur.place(x=190, y=160)
+    ctk.CTkLabel(
+        fenetre, text="Quantité :", font=("Arial", fs), text_color="black"
+    ).place(x=x_info, y=int(H * 0.27))
+
+    sel_w = int(W * 0.40)
+    sel_h = int(H * 0.092)
+    btn_sel = int(sel_w * 0.28)
+
+    cadre_selecteur = ctk.CTkFrame(fenetre, width=sel_w, height=sel_h, corner_radius=12, fg_color="#F2F2F2")
+    cadre_selecteur.place(x=x_info, y=int(H * 0.35))
 
     ctk.CTkButton(
-        cadre_selecteur, text="-", width=40, height=40, corner_radius=12,
-        fg_color="#E0E0E0", hover_color="#CCCCCC", text_color="black",
-        font=("Arial", 18, "bold"), command=lambda: modifier_quantite(-1)
+        cadre_selecteur, text="-", width=btn_sel, height=sel_h - 10,
+        corner_radius=12, fg_color="#E0E0E0", hover_color="#CCCCCC",
+        text_color="black", font=("Arial", int(H * 0.033), "bold"),
+        command=lambda: modifier_quantite(-1)
     ).place(x=0, y=5)
     ctk.CTkLabel(
-        cadre_selecteur, textvariable=var_qte, width=40,
-        font=("Arial", 15, "bold"), text_color="black"
-    ).place(x=45, y=5)
+        cadre_selecteur, textvariable=var_qte, width=btn_sel,
+        font=("Arial", int(H * 0.028), "bold"), text_color="black"
+    ).place(x=btn_sel + 5, y=5)
     ctk.CTkButton(
-        cadre_selecteur, text="+", width=40, height=40, corner_radius=12,
-        fg_color="#E0E0E0", hover_color="#CCCCCC", text_color="black",
-        font=("Arial", 18, "bold"), command=lambda: modifier_quantite(1)
-    ).place(x=90, y=5)
+        cadre_selecteur, text="+", width=btn_sel, height=sel_h - 10,
+        corner_radius=12, fg_color="#E0E0E0", hover_color="#CCCCCC",
+        text_color="black", font=("Arial", int(H * 0.033), "bold"),
+        command=lambda: modifier_quantite(1)
+    ).place(x=(btn_sel * 2) + 10, y=5)
 
     ctk.CTkLabel(
         fenetre, text=f"Propriétés : {desc_text}",
-        font=("Arial", 12), text_color="#444444",
-        wraplength=340, justify="left"
-    ).place(x=20, y=290)
+        font=("Arial", fs), text_color="#444444",
+        wraplength=int(W * 0.90), justify="left"
+    ).place(x=int(W * 0.04), y=int(H * 0.70))
 
     def declencher_alerte():
         signaler_erreur_stock(nom_item)
-        cadre_notif = ctk.CTkFrame(
-            fenetre, width=320, height=40, corner_radius=12, fg_color="#444444"
-        )
-        cadre_notif.place(relx=0.5, y=385, anchor="n")
-        ctk.CTkLabel(
-            cadre_notif, text="✅ Alerte envoyée",
-            font=("Arial", 12, "bold"), text_color="white"
-        ).place(relx=0.5, rely=0.5, anchor="center")
+        cadre_notif = ctk.CTkFrame(fenetre, width=int(W * 0.50), height=int(H * 0.07), corner_radius=12, fg_color="#444444")
+        cadre_notif.place(relx=0.5, rely=0.88, anchor="center")
+        ctk.CTkLabel(cadre_notif, text="✅ Alerte envoyée", font=("Arial", fs, "bold"), text_color="white").place(relx=0.5, rely=0.5, anchor="center")
         btn_alerte.configure(state="disabled", fg_color="#E0E0E0", text="Alerte effectuée", text_color="#888888")
         fenetre.after(3000, lambda: cadre_notif.destroy() if cadre_notif.winfo_exists() else None)
 
@@ -140,16 +152,21 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
             from src.logic.inventory_logic import ajouter_au_panier
             ajouter_au_panier(nom_item, qte_interne, nettoyer_et_quitter)
 
+    btn_w = int(W * 0.27)
+    btn_h = int(H * 0.082)
+
     btn_alerte = ctk.CTkButton(
-        fenetre, text="⚠️ Erreur Stock", width=150, height=45, corner_radius=12,
+        fenetre, text="⚠️ Erreur Stock",
+        width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#E9F904", hover_color="#D4E404", text_color="black",
-        font=("Arial", 13, "bold"), command=declencher_alerte
+        font=("Arial", fs, "bold"), command=declencher_alerte
     )
-    btn_alerte.place(x=20, y=465)
+    btn_alerte.place(x=int(W * 0.04), rely=0.92, anchor="sw")
 
     ctk.CTkButton(
-        fenetre, text="Ajouter au Panier", width=150, height=45, corner_radius=12,
+        fenetre, text="Ajouter au Panier",
+        width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#2ECC71", hover_color="#27AE60", text_color="white",
-        font=("Arial", 13, "bold"), command=valider,
+        font=("Arial", fs, "bold"), command=valider,
         state="normal" if stock_disponible > 0 else "disabled"
-    ).place(x=190, y=465)
+    ).place(x=int(W * 0.55), rely=0.92, anchor="sw")

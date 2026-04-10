@@ -3,6 +3,10 @@ from src.models import globals as g
 from src.logic.timer_manager import reset_inactivite
 
 def ouvrir_vue_panier(fenetre, relancer_nav_callback):
+    W, H = g.SW, g.SH
+    fs = int(H * 0.022)
+    fs_title = int(H * 0.033)
+
     def auto_logout():
         for widget in fenetre.winfo_children():
             widget.destroy()
@@ -15,31 +19,31 @@ def ouvrir_vue_panier(fenetre, relancer_nav_callback):
 
     ctk.CTkLabel(
         fenetre, text="Récapitulatif Panier",
-        font=("Segoe Print", 18, "bold"), text_color="black"
-    ).place(relx=0.5, y=35, anchor="center")
+        font=("Segoe Print", fs_title, "bold"), text_color="black"
+    ).place(relx=0.5, rely=0.06, anchor="center")
 
-    ctk.CTkFrame(fenetre, height=2, width=320, fg_color="#E0E0E0").place(relx=0.5, y=60, anchor="center")
+    ctk.CTkFrame(fenetre, height=2, width=int(W * 0.85), fg_color="#E0E0E0").place(relx=0.5, rely=0.11, anchor="center")
 
     g.cadre_liste = ctk.CTkScrollableFrame(
-        fenetre, width=300, height=330,
+        fenetre, width=int(W * 0.80), height=int(H * 0.60),
         fg_color="#FDFDFD", border_width=1, border_color="#E0E0E0",
         label_text="Articles sélectionnés",
-        label_font=("Arial", 12, "bold"),
+        label_font=("Arial", fs, "bold"),
         scrollbar_button_color="#D0D0D0",
         scrollbar_button_hover_color="#A0A0A0"
     )
-    g.cadre_liste.place(relx=0.5, y=205, anchor="center")
+    g.cadre_liste.place(relx=0.5, rely=0.40, anchor="center")
 
     if not g.panier:
         ctk.CTkLabel(
             g.cadre_liste, text="Votre panier est vide...",
-            font=("Arial", 13, "italic"), text_color="gray"
-        ).pack(pady=110)
+            font=("Arial", fs, "italic"), text_color="gray"
+        ).pack(pady=int(H * 0.18))
     else:
         for item, quantite in g.panier.items():
             ctk.CTkLabel(
                 g.cadre_liste, text=f"• {item}  ×{quantite}",
-                font=("Arial", 13), text_color="black", anchor="w"
+                font=("Arial", fs), text_color="black", anchor="w"
             ).pack(fill="x", padx=10, pady=5)
 
     def quitter_panier():
@@ -48,17 +52,19 @@ def ouvrir_vue_panier(fenetre, relancer_nav_callback):
         relancer_nav_callback()
 
     g.btn_retour_panier = ctk.CTkButton(
-        fenetre, text="← Continuer la sélection", width=250, height=45,
+        fenetre, text="← Continuer la sélection",
+        width=int(W * 0.45), height=int(H * 0.082),
         corner_radius=12, fg_color="#B9E9FF", hover_color="#7BBFE0",
-        text_color="black", font=("Arial", 12, "bold"),
+        text_color="black", font=("Arial", fs, "bold"),
         command=quitter_panier
     )
-    g.btn_retour_panier.place(relx=0.5, y=455, anchor="center")
+    g.btn_retour_panier.place(relx=0.5, rely=0.83, anchor="center")
 
     if g.panier:
         ctk.CTkButton(
-            fenetre, text="Vider le panier", width=180, height=38,
+            fenetre, text="Vider le panier",
+            width=int(W * 0.35), height=int(H * 0.070),
             corner_radius=12, fg_color="#FFD1D1", hover_color="#E89595",
-            text_color="#C0392B", font=("Arial", 11, "bold"),
+            text_color="#C0392B", font=("Arial", fs, "bold"),
             command=lambda: [g.panier.clear(), ouvrir_vue_panier(fenetre, relancer_nav_callback)]
-        ).place(relx=0.5, y=505, anchor="center")
+        ).place(relx=0.5, rely=0.93, anchor="center")

@@ -7,6 +7,10 @@ panier = {}
 utilisateur_actuel = "Utilisateur"
 stocks = {}
 
+# == DIMENSIONS ÉCRAN (calculées au démarrage dans main.py) ==
+SW = 1024
+SH = 600
+
 # == RÉFÉRENCES WIDGETS UI ==
 label_logo = None
 sous_titre1 = None

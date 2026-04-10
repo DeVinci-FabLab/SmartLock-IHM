@@ -6,6 +6,12 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
     for widget in fenetre.winfo_children():
         widget.place_forget()
 
+    W, H = g.SW, g.SH
+    fs = int(H * 0.022)
+    fs_title = int(H * 0.026)
+    btn_w = int(W * 0.27)
+    btn_h = int(H * 0.092)
+
     def auto_retour_navigation():
         nettoyer_ecran_couleur()
         relancer_nav_callback()
@@ -14,9 +20,9 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
 
     g.titre_couleur = ctk.CTkLabel(
         fenetre, text=f"Choisir Couleur : {materiau}",
-        font=("Segoe Print", 14, "bold"), text_color="black"
+        font=("Segoe Print", fs_title, "bold"), text_color="black"
     )
-    g.titre_couleur.place(relx=0.5, y=50, anchor="center")
+    g.titre_couleur.place(relx=0.5, rely=0.09, anchor="center")
 
     def get_btn_config(color_name, base_color, hover_color):
         full_name = f"{materiau} {color_name}"
@@ -38,9 +44,15 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
         ("Gris",   "#D7D7D7", "#868686"),
     ]
 
+    x_left   = int(W * 0.18)
+    x_center = int(W * 0.50)
+    x_right  = int(W * 0.82)
+    y_row1   = int(H * 0.35)
+    y_row2   = int(H * 0.52)
+
     positions = [
-        (65, 190), (180, 190), (295, 190),
-        (65, 255), (180, 255), (295, 255),
+        (x_left, y_row1), (x_center, y_row1), (x_right, y_row1),
+        (x_left, y_row2), (x_center, y_row2), (x_right, y_row2),
     ]
 
     btn_attrs = ["btn_rouge", "btn_bleu", "btn_vert", "btn_jaune", "btn_orange", "btn_gris"]
@@ -52,9 +64,9 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
         c, h, state, label, tc = get_btn_config(color_name, base_color, hover_color)
         btn = ctk.CTkButton(
             fenetre, text=label, fg_color=c, hover_color=h, text_color=tc,
-            width=100, height=50, corner_radius=12,
+            width=btn_w, height=btn_h, corner_radius=12,
             border_width=1, border_color="#E0E0E0",
-            font=("Arial", 12, "bold"), state=state,
+            font=("Arial", fs, "bold"), state=state,
             command=lambda cn=color_name: clic_couleur(cn)
         )
         btn.place(x=positions[idx][0], y=positions[idx][1], anchor="center")
@@ -66,22 +78,26 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
         ouvrir_vue_panier(fenetre, lambda: ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback))
 
     g.btn_voir_panier = ctk.CTkButton(
-        fenetre, text="🛒 Voir Panier", width=200, height=45, corner_radius=12,
-        fg_color="#E9F904", hover_color="#D4E404", text_color="black",
-        font=("Arial", 12, "bold"), command=voir_panier
+        fenetre, text="🛒 Voir Panier",
+        width=int(W * 0.35), height=int(H * 0.082),
+        corner_radius=12, fg_color="#E9F904", hover_color="#D4E404",
+        text_color="black", font=("Arial", fs, "bold"),
+        command=voir_panier
     )
-    g.btn_voir_panier.place(relx=0.5, y=420, anchor="center")
+    g.btn_voir_panier.place(relx=0.5, rely=0.78, anchor="center")
 
     def annuler():
         nettoyer_ecran_couleur()
         relancer_nav_callback()
 
     g.btn_annuler_couleur = ctk.CTkButton(
-        fenetre, text="Annuler", width=200, height=45, corner_radius=12,
-        fg_color="#E74C3C", hover_color="#C0392B", text_color="white",
-        font=("Arial", 12, "bold"), command=annuler
+        fenetre, text="Annuler",
+        width=int(W * 0.35), height=int(H * 0.082),
+        corner_radius=12, fg_color="#E74C3C", hover_color="#C0392B",
+        text_color="white", font=("Arial", fs, "bold"),
+        command=annuler
     )
-    g.btn_annuler_couleur.place(relx=0.5, y=480, anchor="center")
+    g.btn_annuler_couleur.place(relx=0.5, rely=0.92, anchor="center")
 
 
 def valider_choix_couleur(materiau, couleur, relancer_nav_callback):

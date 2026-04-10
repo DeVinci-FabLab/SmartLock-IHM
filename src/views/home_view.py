@@ -52,6 +52,7 @@ def revenir_accueil(fenetre):
 
 def setup_home_screen(fenetre):
     fenetre.configure(fg_color="white")
+    W, H = g.SW, g.SH
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(current_dir))
@@ -68,26 +69,27 @@ def setup_home_screen(fenetre):
         print(f"⚠️ Erreur chargement logo ({img_path}): {e}")
         g.label_logo = ctk.CTkLabel(fenetre, text="Logo Introuvable", text_color="#E74C3C")
 
-    g.label_logo.place(relx=0.5, y=165, anchor="center")
+    g.label_logo.place(relx=0.5, rely=0.30, anchor="center")
 
     g.sous_titre1 = ctk.CTkLabel(
         fenetre, text='DeVinci Fablab',
-        font=('Segoe Print', 14, 'bold'), text_color="black"
+        font=('Segoe Print', int(H * 0.025), 'bold'), text_color="black"
     )
-    g.sous_titre1.place(relx=0.5, y=275, anchor="center")
+    g.sous_titre1.place(relx=0.5, rely=0.50, anchor="center")
 
-    g.trait_accueil = ctk.CTkFrame(fenetre, height=2, width=275, fg_color="#E0E0E0")
-    g.trait_accueil.place(relx=0.5, y=315, anchor="center")
+    g.trait_accueil = ctk.CTkFrame(fenetre, height=2, width=int(W * 0.76), fg_color="#E0E0E0")
+    g.trait_accueil.place(relx=0.5, rely=0.57, anchor="center")
 
     g.sous_titre2 = ctk.CTkLabel(
         fenetre, text="Badgez pour continuer",
-        font=("Segoe Print", 13), text_color="black"
+        font=("Segoe Print", int(H * 0.024)), text_color="black"
     )
-    g.sous_titre2.place(relx=0.5, y=400, anchor="center")
+    g.sous_titre2.place(relx=0.5, rely=0.73, anchor="center")
 
     g.btn_simu = ctk.CTkButton(
-        fenetre, text="SIMULER BADGE", width=120, height=30,
-        corner_radius=12, font=("Arial", 10, "bold"),
+        fenetre, text="SIMULER BADGE",
+        width=int(W * 0.18), height=int(H * 0.055),
+        corner_radius=12, font=("Arial", int(H * 0.018), "bold"),
         fg_color="#E0E0E0", hover_color="#CCCCCC", text_color="#444444",
         command=lambda: valider_badge(fenetre)
     )

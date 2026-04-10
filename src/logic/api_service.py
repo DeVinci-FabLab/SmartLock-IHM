@@ -120,15 +120,11 @@ def verifier_etat_porte():
 
 
 def envoyer_alerte_discord(motif="Armoire non refermée à temps"):
-    """Envoie une alerte Discord quand l'armoire n'est pas refermée."""
     if SIMULATION_MODE:
         print(f"🛠 [SIMU] Alerte Discord envoyée : '{motif}' — utilisateur : {g.utilisateur_actuel}")
         return True
     try:
-        payload = {
-            "utilisateur": g.utilisateur_actuel,
-            "motif": motif
-        }
+        payload = {"utilisateur": g.utilisateur_actuel, "motif": motif}
         reponse = requests.post(URL_ALERTE_DISCORD, json=payload, timeout=5)
         return reponse.status_code == 200
     except Exception as e:
@@ -137,15 +133,11 @@ def envoyer_alerte_discord(motif="Armoire non refermée à temps"):
 
 
 def signaler_erreur_stock(nom_item):
-    """Signale une erreur de stock sur un article depuis l'écran de sélection."""
     if SIMULATION_MODE:
         print(f"🛠 [SIMU] Erreur stock signalée pour : '{nom_item}' — utilisateur : {g.utilisateur_actuel}")
         return True
     try:
-        payload = {
-            "utilisateur": g.utilisateur_actuel,
-            "article": nom_item
-        }
+        payload = {"utilisateur": g.utilisateur_actuel, "article": nom_item}
         reponse = requests.post(URL_ALERTE_STOCK, json=payload, timeout=5)
         return reponse.status_code == 200
     except Exception as e:
