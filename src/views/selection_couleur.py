@@ -47,8 +47,8 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
     x_left   = int(W * 0.18)
     x_center = int(W * 0.50)
     x_right  = int(W * 0.82)
-    y_row1   = int(H * 0.35)
-    y_row2   = int(H * 0.52)
+    y_row1   = int(H * 0.25)
+    y_row2   = int(H * 0.42)
 
     positions = [
         (x_left, y_row1), (x_center, y_row1), (x_right, y_row1),
@@ -84,7 +84,7 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
         text_color="black", font=("Arial", fs, "bold"),
         command=voir_panier
     )
-    g.btn_voir_panier.place(relx=0.5, rely=0.78, anchor="center")
+    g.btn_voir_panier.place(relx=0.5, rely=0.72, anchor="center")
 
     def annuler():
         nettoyer_ecran_couleur()
@@ -97,7 +97,7 @@ def ouvrir_selection_couleur(fenetre, materiau, relancer_nav_callback):
         text_color="white", font=("Arial", fs, "bold"),
         command=annuler
     )
-    g.btn_annuler_couleur.place(relx=0.5, rely=0.92, anchor="center")
+    g.btn_annuler_couleur.place(relx=0.5, rely=0.86, anchor="center")
 
 
 def valider_choix_couleur(materiau, couleur, relancer_nav_callback):

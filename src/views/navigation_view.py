@@ -42,35 +42,46 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
         suffixe = "" if stock > 0 else "\n(Vide)"
         return color, hover, text_color, state, suffixe
 
-    fs = int(H * 0.022)
-    fs_title = int(H * 0.026)
-    btn_w = int(W * 0.27)
-    btn_h = int(H * 0.10)
-    menu_w = int(W * 0.30)
-    menu_h = int(H * 0.058)
-    cadre_w = int(W * 0.95)
-    cadre_h = int(H * 0.14)
+    fs = int(H * 0.019)
+    fs_title = int(H * 0.023)
+
+    btn_w = int(W * 0.28)
+    btn_h = int(H * 0.085)
+    menu_w = int(W * 0.28)
+    menu_h = int(H * 0.048)
+    cadre_w = int(W * 0.94)
+    cadre_h = int(H * 0.115)
 
     x_left   = int(W * 0.18)
     x_center = int(W * 0.50)
     x_right  = int(W * 0.82)
 
-    y_header   = int(H * 0.045)
-    y_sep      = int(H * 0.09)
-    y_menu     = int(H * 0.15)
-    y_t_label  = int(H * 0.22)
-    y_t_cadre  = int(H * 0.31)
-    y_f_label  = int(H * 0.40)
-    y_f_cadre  = int(H * 0.49)
-    y_e_label  = int(H * 0.58)
-    y_e_cadre  = int(H * 0.67)
+    y_header  = int(H * 0.038)
+    y_sep     = int(H * 0.075)
+    y_menu    = int(H * 0.125)
+    y_t_label = int(H * 0.168)
+    y_t_cadre = int(H * 0.265)
+    y_f_label = int(H * 0.328)
+    y_f_cadre = int(H * 0.425)
+    y_e_label = int(H * 0.488)
+    y_e_cadre = int(H * 0.580)
 
-    ctk.CTkLabel(fenetre, text="👤", font=("Arial", int(H * 0.04))).place(x=int(W * 0.055), y=y_header, anchor="center")
+    ctk.CTkLabel(fenetre, text="👤", font=("Arial", int(H * 0.035))).place(x=int(W * 0.055), y=y_header, anchor="center")
     g.titre_nav = ctk.CTkLabel(
         fenetre, text=f"Bienvenue {g.utilisateur_actuel} !",
         font=("Segoe Print", fs_title, "bold"), text_color="black"
     )
-    g.titre_nav.place(x=int(W * 0.40), y=y_header, anchor="center")
+    g.titre_nav.place(x=int(W * 0.42), y=y_header, anchor="center")
+
+    g.btn_retour = ctk.CTkButton(
+        fenetre, text="Quitter",
+        width=int(W * 0.22), height=int(H * 0.048),
+        corner_radius=12, fg_color="#E74C3C", hover_color="#C0392B",
+        text_color="white", font=("Arial", fs, "bold"),
+        command=auto_logout
+    )
+    g.btn_retour.place(x=int(W * 0.97), y=y_header, anchor="e")
+
     ctk.CTkFrame(fenetre, height=2, width=W, fg_color="#E0E0E0").place(x=0, y=y_sep)
 
     style_menu = {
@@ -112,7 +123,7 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
         btn.place(x=[x_left, x_center, x_right][i], y=y_f_cadre, anchor="center")
 
     cadre_e_w = int(W * 0.64)
-    ctk.CTkFrame(fenetre, width=cadre_e_w, height=cadre_h, corner_radius=12, fg_color="white", border_width=1, border_color="#E0E0E0").place(x=x_center, y=y_e_cadre, anchor="center")
+    ctk.CTkFrame(fenetre, width=cadre_e_w, height=cadre_h, corner_radius=12, fg_color="white", border_width=1, border_color="#E0E0E0").place(x=int(W * 0.35), y=y_e_cadre, anchor="center")
     ctk.CTkLabel(fenetre, text="Electronique", font=("Segoe Print", fs_title, "bold"), text_color="black").place(x=int(W * 0.04), y=y_e_label)
 
     for i, name in enumerate(["driver", "moteur"]):
@@ -126,34 +137,26 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
         btn.configure(command=lambda n=name: ouvrir_ecran_selection(fenetre, n, rafraichir))
         btn.place(x=[x_left, x_center][i], y=y_e_cadre, anchor="center")
 
-    g.btn_voir_panier = ctk.CTkButton(
-        fenetre, text="🛒 Panier",
-        width=int(W * 0.18), height=int(H * 0.082),
-        corner_radius=12, fg_color="#E9F904", hover_color="#D4E404",
-        text_color="black", font=("Arial", fs, "bold"),
-        command=lambda: ouvrir_vue_panier(fenetre, rafraichir)
-    )
-    g.btn_voir_panier.place(x=int(W * 0.02), rely=0.94, anchor="sw")
-
-    g.btn_retour = ctk.CTkButton(
-        fenetre, text="Quitter",
-        width=int(W * 0.12), height=int(H * 0.058),
-        corner_radius=12, fg_color="#E74C3C", hover_color="#C0392B",
-        text_color="white", font=("Arial", fs, "bold"),
-        command=auto_logout
-    )
-    g.btn_retour.place(x=int(W * 0.875), y=y_header, anchor="center")
-
-    btn_val_size = int(H * 0.136)
+    btn_val_size = int(min(W, H) * 0.185)
+    #btn_val_size = min(int(min(W, H) * 0.185), 111)
     g.btn_valider = ctk.CTkButton(
         fenetre, text="✓",
-        font=("Arial", int(H * 0.051), "bold"),
+        font=("Arial", int(btn_val_size * 0.45), "bold"),
         width=btn_val_size, height=btn_val_size,
         corner_radius=btn_val_size // 2,
         fg_color="gray", state="disabled",
         text_color="white", command=aller_a_validation
     )
-    g.btn_valider.place(x=int(W * 0.88), rely=0.9, anchor="center")
+    g.btn_valider.place(x=int(W * 0.80), y=int(H * 0.73), anchor="center")
+
+    g.btn_voir_panier = ctk.CTkButton(
+        fenetre, text="🛒 Panier",
+        width=int(W * 0.45), height=int(H * 0.075),
+        corner_radius=12, fg_color="#E9F904", hover_color="#D4E404",
+        text_color="black", font=("Arial", int(H * 0.022), "bold"),
+        command=lambda: ouvrir_vue_panier(fenetre, rafraichir)
+    )
+    g.btn_voir_panier.place(x=int(W * 0.04), y=int(H * 0.73), anchor="w")
 
     update_validation_button()
     reset_inactivite(fenetre, auto_logout)

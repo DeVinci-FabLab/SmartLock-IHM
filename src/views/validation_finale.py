@@ -6,8 +6,8 @@ from src.logic.timer_manager import reset_inactivite
 def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     fenetre.configure(fg_color="white")
     W, H = g.SW, g.SH
-    fs = int(H * 0.022)
-    fs_title = int(H * 0.029)
+    fs = int(H * 0.019)
+    fs_title = int(H * 0.025)
 
     def auto_logout_validation():
         for widget in fenetre.winfo_children():
@@ -27,16 +27,16 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     ctk.CTkLabel(
         fenetre, text="Validation de la sélection",
         font=("Segoe Print", fs_title, "bold"), text_color="black"
-    ).place(relx=0.5, rely=0.06, anchor="center")
-    ctk.CTkFrame(fenetre, height=2, width=int(W * 0.85), fg_color="#E0E0E0").place(relx=0.5, rely=0.11, anchor="center")
+    ).place(relx=0.5, rely=0.05, anchor="center")
+    ctk.CTkFrame(fenetre, height=2, width=int(W * 0.88), fg_color="#E0E0E0").place(relx=0.5, rely=0.10, anchor="center")
 
     scroll_container = ctk.CTkScrollableFrame(
-        fenetre, width=int(W * 0.90), height=int(H * 0.60),
+        fenetre, width=int(W * 0.88), height=int(H * 0.62),
         fg_color="transparent",
         scrollbar_button_color="#D0D0D0",
         scrollbar_button_hover_color="#A0A0A0"
     )
-    scroll_container.place(relx=0.5, rely=0.44, anchor="center")
+    scroll_container.place(relx=0.5, rely=0.42, anchor="center")
 
     g.dict_widgets_panier = {}
 
@@ -54,28 +54,28 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
             scroll_container, fg_color="white", corner_radius=12,
             border_width=1, border_color="#E0E0E0"
         )
-        item_frame.grid(row=index_ligne, column=0, sticky="ew", pady=6, padx=5)
+        item_frame.grid(row=index_ligne, column=0, sticky="ew", pady=5, padx=5)
         scroll_container.grid_columnconfigure(0, weight=1)
         g.dict_widgets_panier[nom_article] = item_frame
 
         inner_container = ctk.CTkFrame(item_frame, fg_color="transparent")
-        inner_container.pack(fill="x", padx=10, pady=10)
+        inner_container.pack(fill="x", padx=8, pady=8)
 
         ligne_haut = ctk.CTkFrame(inner_container, fg_color="transparent")
         ligne_haut.pack(fill="x")
 
         ctk.CTkButton(
             ligne_haut, text="🗑",
-            width=int(W * 0.06), height=int(H * 0.058),
+            width=int(W * 0.08), height=int(H * 0.050),
             corner_radius=12, fg_color="#FFD1D1", hover_color="#E89595",
-            text_color="#E74C3C", font=("Arial", int(H * 0.029)),
+            text_color="#E74C3C", font=("Arial", int(H * 0.025)),
             command=lambda: supprimer_article(nom_article)
         ).pack(side="left")
 
         ctk.CTkLabel(
             ligne_haut, text=nom_article,
             fg_color="#F2F2F2", corner_radius=8,
-            width=int(W * 0.42), height=int(H * 0.058),
+            width=int(W * 0.44), height=int(H * 0.050),
             text_color="black", font=("Arial", fs, "bold")
         ).pack(side="left", padx=5)
 
@@ -94,11 +94,11 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
             else:
                 dessiner_un_article(n, idx)
 
-        bq = int(H * 0.070)
+        bq = int(H * 0.055)
         ctk.CTkButton(
             btn_frame, text="-", width=bq, height=bq,
             corner_radius=12, fg_color="transparent", hover_color="#E0E0E0",
-            text_color="black", font=("Arial", int(H * 0.029), "bold"),
+            text_color="black", font=("Arial", int(H * 0.025), "bold"),
             command=lambda: modif_qty(nom_article, -1, index_ligne)
         ).pack(side="left")
 
@@ -106,16 +106,16 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
         ctk.CTkButton(
             btn_frame, text="+", width=bq, height=bq,
             corner_radius=12, fg_color="transparent", hover_color="#E0E0E0",
-            text_color=color_plus, font=("Arial", int(H * 0.029), "bold"),
+            text_color=color_plus, font=("Arial", int(H * 0.025), "bold"),
             command=lambda: modif_qty(nom_article, 1, index_ligne)
         ).pack(side="right")
 
         infos_frame = ctk.CTkFrame(inner_container, fg_color="transparent")
-        infos_frame.pack(fill="x", padx=int(W * 0.08))
+        infos_frame.pack(fill="x", padx=int(W * 0.10))
 
         color_qte = "#E74C3C" if qte_choisie >= stock_actuel else "#555555"
-        ctk.CTkLabel(infos_frame, text=f"Quantité : {qte_choisie}", font=("Arial", int(H * 0.018), "bold"), text_color=color_qte).pack(anchor="w")
-        ctk.CTkLabel(infos_frame, text=f"Stock total : {stock_actuel}", font=("Arial", int(H * 0.018)), text_color="#555555").pack(anchor="w")
+        ctk.CTkLabel(infos_frame, text=f"Quantité : {qte_choisie}", font=("Arial", int(H * 0.016), "bold"), text_color=color_qte).pack(anchor="w")
+        ctk.CTkLabel(infos_frame, text=f"Stock total : {stock_actuel}", font=("Arial", int(H * 0.016)), text_color="#555555").pack(anchor="w")
 
     def supprimer_article(nom):
         if nom in g.panier:
@@ -134,15 +134,15 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
 
     rafraichir_tout()
 
-    btn_w = int(W * 0.27)
-    btn_h = int(H * 0.082)
+    btn_w = int(W * 0.38)
+    btn_h = int(H * 0.062)
 
     ctk.CTkButton(
         fenetre, text="✖ Annuler",
         width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#E74C3C", hover_color="#C0392B", text_color="white",
         font=("Arial", fs, "bold"), command=relancer_nav_callback
-    ).place(x=int(W * 0.04), rely=0.92, anchor="sw")
+    ).place(x=int(W * 0.04), rely=0.93, anchor="sw")
 
     def action_valider():
         if g.panier:
@@ -164,4 +164,4 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
         width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#2ECC71", hover_color="#27AE60", text_color="white",
         font=("Arial", fs, "bold"), command=action_valider
-    ).place(x=int(W * 0.55), rely=0.92, anchor="sw")
+    ).place(x=int(W * 0.58), rely=0.93, anchor="sw")

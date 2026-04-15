@@ -4,8 +4,8 @@ from src.models import globals as g
 def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
     fenetre.configure(fg_color="white")
     W, H = g.SW, g.SH
-    fs = int(H * 0.022)
-    fs_title = int(H * 0.029)
+    fs = int(H * 0.019)
+    fs_title = int(H * 0.025)
 
     motif_selectionne = ctk.StringVar(value="")
 
@@ -37,36 +37,35 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
             widget.destroy()
         ouvrir_validation_finale(fenetre, relancer_nav_callback)
 
-    header = ctk.CTkFrame(fenetre, fg_color="transparent", height=int(H * 0.11))
-    header.pack(fill="x", padx=int(W * 0.03), pady=(int(H * 0.018), 0))
+    header = ctk.CTkFrame(fenetre, fg_color="transparent", height=int(H * 0.09))
+    header.pack(fill="x", padx=int(W * 0.05), pady=(int(H * 0.02), 0))
 
     ctk.CTkLabel(
         header, text=f"👤 À bientôt {g.utilisateur_actuel} !",
         font=("Segoe Print", fs_title, "bold"), text_color="black"
-    ).pack(side="left", padx=int(W * 0.02))
+    ).pack(side="left")
 
-    ctk.CTkFrame(fenetre, height=2, fg_color="#E0E0E0").pack(fill="x", padx=int(W * 0.03), pady=(0, int(H * 0.033)))
+    ctk.CTkFrame(fenetre, height=2, fg_color="#E0E0E0").pack(fill="x", padx=int(W * 0.05), pady=(0, int(H * 0.02)))
 
-    cadre_w = int(W * 0.65)
-    cadre_h = int(H * 0.26)
+    cadre_w = int(W * 0.86)
+    cadre_h = int(H * 0.22)
+    btn_w = int(W * 0.36)
+    btn_h = int(H * 0.068)
 
     cadre_question = ctk.CTkFrame(
         fenetre, width=cadre_w, height=cadre_h, corner_radius=12,
         fg_color="#F8F9FA", border_width=1, border_color="#E0E0E0"
     )
-    cadre_question.place(relx=0.5, rely=0.26, anchor="center")
+    cadre_question.place(relx=0.5, rely=0.24, anchor="center")
     cadre_question.pack_propagate(False)
 
     ctk.CTkLabel(
         cadre_question, text="Tout s'est bien passé ?",
         font=("Arial", fs_title, "bold"), text_color="black"
-    ).pack(pady=(int(H * 0.027), int(H * 0.009)))
+    ).pack(pady=(int(H * 0.018), int(H * 0.008)))
 
     btn_frame = ctk.CTkFrame(cadre_question, fg_color="transparent")
     btn_frame.pack(expand=True)
-
-    btn_w = int(W * 0.24)
-    btn_h = int(H * 0.082)
 
     ctk.CTkButton(
         btn_frame, text="Oui, parfait",
@@ -81,20 +80,20 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
         if g.cadre_feedback:
             return
 
-        fb_w = int(W * 0.65)
-        fb_h = int(H * 0.55)
+        fb_w = int(W * 0.86)
+        fb_h = int(H * 0.60)
 
         g.cadre_feedback = ctk.CTkFrame(
             fenetre, width=fb_w, height=fb_h, corner_radius=12,
             fg_color="white", border_width=1, border_color="#E0E0E0"
         )
-        g.cadre_feedback.place(relx=0.5, rely=0.73, anchor="center")
+        g.cadre_feedback.place(relx=0.5, rely=0.45, anchor="n")
         g.cadre_feedback.pack_propagate(False)
 
         ctk.CTkLabel(
             g.cadre_feedback, text="Signaler un problème :",
             font=("Arial", fs, "bold"), text_color="black"
-        ).pack(pady=(int(H * 0.027), int(H * 0.018)))
+        ).pack(pady=(int(H * 0.015), int(H * 0.008)))
 
         btns_motifs = []
 
@@ -121,22 +120,22 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
                 g.cadre_feedback, text=m,
                 fg_color="#F2F2F2", hover_color="#E0E0E0",
                 text_color=txt_color, border_width=1, border_color="#E0E0E0",
-                height=int(H * 0.073), corner_radius=12,
+                height=int(H * 0.055), corner_radius=12,
                 font=("Arial", fs, "bold" if is_redir else "normal")
             )
             btn.configure(command=lambda val=m, b=btn: select_motif(val, b))
-            btn.pack(fill="x", padx=int(W * 0.03), pady=int(H * 0.007))
+            btn.pack(fill="x", padx=int(W * 0.04), pady=int(H * 0.005))
             btns_motifs.append(btn)
 
         action_container = ctk.CTkFrame(g.cadre_feedback, fg_color="transparent")
-        action_container.pack(pady=int(H * 0.027))
+        action_container.pack(pady=int(H * 0.015))
 
         ctk.CTkButton(
             action_container, text="Réouvrir",
             fg_color="#B9E9FF", hover_color="#7BBFE0", text_color="black",
-            width=int(W * 0.22), height=btn_h, corner_radius=12,
+            width=int(W * 0.36), height=btn_h, corner_radius=12,
             font=("Arial", fs, "bold"), command=reouvrir_armoire
-        ).pack(side="left", padx=int(W * 0.01))
+        ).pack(side="left", padx=int(W * 0.02))
 
         def envoyer_et_quitter():
             if motif_selectionne.get():
@@ -148,9 +147,9 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
         ctk.CTkButton(
             action_container, text="Envoyer",
             fg_color="#2ECC71", hover_color="#27AE60", text_color="white",
-            width=int(W * 0.22), height=btn_h, corner_radius=12,
+            width=int(W * 0.36), height=btn_h, corner_radius=12,
             font=("Arial", fs, "bold"), command=envoyer_et_quitter
-        ).pack(side="left", padx=int(W * 0.01))
+        ).pack(side="left", padx=int(W * 0.02))
 
     ctk.CTkButton(
         btn_frame, text="Non...",
