@@ -11,12 +11,12 @@ def main():
     fenetre.configure(fg_color="white")
     fenetre.resizable(False, False)
 
-    #g.SW = 600
-    #g.SH = 1024
+    g.SW = 600
+    g.SH = 1024
     #tout est parfait
 
-    g.SW = 1080
-    g.SH = 1920
+    #g.SW = 1080
+    #g.SH = 1920
     #ecran trop petit
 
     #g.SW = 400
