@@ -2,6 +2,7 @@ import customtkinter as ctk
 from src.models import globals as g
 from src.logic.api_service import enregistrer_transaction
 from src.logic.timer_manager import reset_inactivite
+from src.logic.logger import logger
 
 def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     fenetre.configure(fg_color="white")
@@ -147,17 +148,24 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     def action_valider():
         if g.panier:
             reussite = enregistrer_transaction(g.panier)
-            if reussite:
-                print("Transaction envoyée à l'API avec succès.")
-            else:
-                print("⚠️ Erreur lors de l'enregistrement de la transaction.")
+            if not reussite:
+                logger.error(f"Échec transaction : {g.utilisateur_actuel} — {g.panier}")
+                label_err = ctk.CTkLabel(
+                    fenetre, text="⚠️ Erreur d'enregistrement\nRéessayez ou contactez un admin",
+                    font=("Arial", int(g.SH * 0.020), "bold"),
+                    text_color="white", fg_color="#E74C3C", corner_radius=10,
+                )
+                label_err.place(relx=0.5, rely=0.80, anchor="center")
+                fenetre.after(3000, label_err.destroy)
+                return
+            logger.info(f"Transaction réussie : {g.utilisateur_actuel} — {g.panier}")
         try:
             from src.views.acces_physique import ouvrir_ecran_physique
             if g.timer_id:
                 fenetre.after_cancel(g.timer_id)
             ouvrir_ecran_physique(fenetre, relancer_nav_callback)
         except ImportError:
-            print("⚠️ Erreur : src.views.acces_physique introuvable.")
+            logger.error("src.views.acces_physique introuvable.")
 
     ctk.CTkButton(
         fenetre, text="Valider & Ouvrir",

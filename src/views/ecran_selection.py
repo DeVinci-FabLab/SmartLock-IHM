@@ -59,17 +59,9 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
     project_root = os.path.dirname(os.path.dirname(current_dir))
     base_path = os.path.join(project_root, "assets", "images")
 
-    DESCRIPTIONS = {
-        "PLA": "Idéal pour les objets esthétiques. Fragile au-delà de 60°C.",
-        "PETG": "Haute résistance aux chocs. Parfait pour les pièces fonctionnelles.",
-        "ASA": "Résistant aux UV et intempéries. Idéal pour l'extérieur.",
-        "moteur": "Moteur pas à pas pour impression 3D.",
-        "driver": "Driver de moteur pas à pas."
-    }
-
     img_map = {
         "ASA": "image_ASA.png", "PETG": "image_PETG.png",
-        "PLA": "image_PLA.jpg", "moteur": "moteur.png", "driver": "driver.png"
+        "PLA": "image_PLA.jpg",
     }
     fichier = "placeholder.png"
     for key in img_map:
@@ -77,11 +69,7 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
             fichier = img_map[key]
             break
 
-    desc_text = "Pas de description disponible."
-    for key in DESCRIPTIONS:
-        if key.upper() in nom_item.upper():
-            desc_text = DESCRIPTIONS[key]
-            break
+    desc_text = g.items_description.get(nom_item, "Pas de description disponible.")
 
     try:
         img_pil = Image.open(os.path.join(base_path, fichier))

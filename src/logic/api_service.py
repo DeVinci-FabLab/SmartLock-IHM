@@ -1,78 +1,129 @@
+import os
 import time
+
 import requests
+from dotenv import load_dotenv
+
 from src.models import globals as g
+from src.logic.logger import logger
 
-SIMULATION_MODE = True
+load_dotenv()
 
-API_URL              = "https://api.smartlock.devinci-fablab.fr"
-KEYCLOAK_URL         = "https://auth.devinci-fablab.fr"
-KEYCLOAK_REALM       = "dev"
-LOCKER_CLIENT_SECRET = "bXOpaWO6Z5y2auWEX4wwK0Fjsi7cQZgF"
-LOCKER_ID            = 1
+SIMULATION_MODE      = os.getenv("SIMULATION_MODE", "True").lower() in ("true", "1", "yes")
+API_URL              = os.getenv("API_URL", "https://api.smartlock.devinci-fablab.fr")
+KEYCLOAK_URL         = os.getenv("KEYCLOAK_URL", "https://auth.devinci-fablab.fr")
+KEYCLOAK_REALM       = os.getenv("KEYCLOAK_REALM", "dev")
+LOCKER_CLIENT_SECRET = os.getenv("LOCKER_CLIENT_SECRET", "")
+LOCKER_ID            = int(os.getenv("LOCKER_ID", "1"))
 
 
 class TokenManager:
-    def __init__(self):
+    def __init__(self, client_id: str, client_secret: str):
+        self._client_id = client_id
+        self._client_secret = client_secret
         self._token = None
         self._expiry = 0.0
 
     def get_token(self) -> str:
         if self._token and time.time() < self._expiry - 30:
             return self._token
-        print("🔑 Renouvellement token Keycloak...")
+        logger.info(f"Renouvellement token Keycloak ({self._client_id})")
         token_url = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token"
         try:
             resp = requests.post(token_url, data={
                 "grant_type": "client_credentials",
-                "client_id": "smartlock-lockers",
-                "client_secret": LOCKER_CLIENT_SECRET,
+                "client_id": self._client_id,
+                "client_secret": self._client_secret,
             }, timeout=5)
             resp.raise_for_status()
             data = resp.json()
             self._token = data["access_token"]
             self._expiry = time.time() + data.get("expires_in", 300)
-            print("✅ Token Keycloak obtenu.")
+            logger.info(f"Token Keycloak obtenu ({self._client_id})")
             return self._token
         except Exception as e:
-            print(f"❌ Erreur obtention token Keycloak : {e}")
+            logger.error(f"Erreur obtention token Keycloak ({self._client_id}) : {e}")
             return ""
 
 
-_token_manager = TokenManager()
+_locker_token_manager = TokenManager("smartlock-lockers", LOCKER_CLIENT_SECRET)
 
 
 def _headers() -> dict:
-    return {"Authorization": f"Bearer {_token_manager.get_token()}"}
+    return {"Authorization": f"Bearer {_locker_token_manager.get_token()}"}
 
 
 def recuperer_stocks_api() -> dict:
     if SIMULATION_MODE:
+        g.stock_ids = {
+            "Arduino Uno R3": 101, "ESP32 DevKit": 102,
+            "Filament PLA 1kg": 201, "Résine UV 500ml": 202,
+        }
+        g.categories_items = {
+            "Électronique":  ["Arduino Uno R3", "ESP32 DevKit"],
+            "Impression 3D": ["Filament PLA 1kg", "Résine UV 500ml"],
+        }
+        g.items_description = {
+            "Arduino Uno R3":    "Carte microcontrôleur ATmega328P",
+            "ESP32 DevKit":      "Module WiFi+BT pour IoT",
+            "Filament PLA 1kg":  "Filament PLA 1.75mm blanc",
+            "Résine UV 500ml":   "Résine photopolymère transparente",
+        }
         return {
-            "PLA Rouge": 0,  "PLA Bleu": 19, "PLA Vert": 4,   "PLA Jaune": 10, "PLA Orange": 60, "PLA Gris": 60,
-            "PETG Rouge": 12,"PETG Bleu": 8, "PETG Vert": 0,  "PETG Jaune": 10,"PETG Orange": 10,"PETG Gris": 10,
-            "ASA Rouge": 10, "ASA Bleu": 10, "ASA Vert": 10,  "ASA Jaune": 10, "ASA Orange": 10, "ASA Gris": 10,
-            "driver": 5, "moteur": 3, "Item 1": 10, "Item 2": 10, "Item 3": 0
+            "Arduino Uno R3": 5, "ESP32 DevKit": 8,
+            "Filament PLA 1kg": 10, "Résine UV 500ml": 0,
         }
     try:
-        resp = requests.get(f"{API_URL}/lockers/{LOCKER_ID}/stock", headers=_headers(), timeout=5)
-        resp.raise_for_status()
-        stock_entries = resp.json()
+        headers = _headers()
 
-        stocks = {}
+        # 1. Catégories
+        cat_resp = requests.get(f"{API_URL}/categories/", headers=headers, timeout=5)
+        cat_resp.raise_for_status()
+        categories_map: dict[int, str] = {
+            cat["id"]: cat["name"] for cat in cat_resp.json()
+        }
+
+        # 2. Tous les items (nom, description, category_id)
+        items_resp = requests.get(f"{API_URL}/items/", headers=headers, timeout=5)
+        items_resp.raise_for_status()
+        items_data = items_resp.json()
+        items_map: dict[int, dict] = {
+            item["id"]: item for item in items_data
+        }
+
+        # 3. Stock du casier
+        stock_resp = requests.get(
+            f"{API_URL}/lockers/{LOCKER_ID}/stock", headers=headers, timeout=5
+        )
+        stock_resp.raise_for_status()
+        stock_entries = stock_resp.json()
+
+        stocks: dict[str, int] = {}
+        stock_ids: dict[str, int] = {}
+        categories_items: dict[str, list] = {}
+        items_description: dict[str, str] = {}
+
         for entry in stock_entries:
             item_id = entry.get("item_id")
-            quantity = entry.get("quantity", 0)
-            try:
-                item_resp = requests.get(f"{API_URL}/items/{item_id}", headers=_headers(), timeout=5)
-                item_resp.raise_for_status()
-                item_name = item_resp.json().get("name", f"Item {item_id}")
-            except Exception:
-                item_name = f"Item {item_id}"
-            stocks[item_name] = quantity
+            item = items_map.get(item_id, {})
+            item_name = item.get("name", f"Item {item_id}")
+            category_name = categories_map.get(item.get("category_id"), "Autre")
 
+            stocks[item_name] = entry.get("quantity", 0)
+            stock_ids[item_name] = entry["id"]
+            items_description[item_name] = item.get("description") or ""
+            categories_items.setdefault(category_name, [])
+            if item_name not in categories_items[category_name]:
+                categories_items[category_name].append(item_name)
+
+        g.stock_ids = stock_ids
+        g.categories_items = categories_items
+        g.items_description = items_description
+        logger.info(f"Stocks chargés : {len(stocks)} articles / {len(categories_items)} catégories")
         return stocks
+
     except Exception as e:
-        print(f"❌ Erreur récupération stocks : {e}")
+        logger.error(f"Erreur récupération stocks : {e}")
         return {}
 
 
@@ -81,9 +132,9 @@ def initialiser_stocks():
     if stocks:
         g.stocks.update(stocks)
         mode = "Simulation" if SIMULATION_MODE else "Réel"
-        print(f"✅ Inventaire initialisé (Mode {mode})")
+        logger.info(f"Inventaire initialisé (Mode {mode})")
     else:
-        print("⚠️ Échec récup stocks, conservation des valeurs par défaut.")
+        logger.warning("Échec récupération stocks, conservation des valeurs par défaut.")
 
 
 def lire_badge_nfc() -> str | None:
@@ -110,33 +161,42 @@ def lire_badge_nfc() -> str | None:
         return None
 
 
+
 def identifier_utilisateur(uid_badge: str) -> bool:
     if SIMULATION_MODE:
         time.sleep(0.5)
         if uid_badge == "12345":
             g.utilisateur_actuel = "Guilhem"
+            g.derniere_raison_acces = None
+            logger.info(f"[SIMU] Accès autorisé pour Guilhem (UID: {uid_badge})")
             return True
+        g.derniere_raison_acces = "no_permission"
+        logger.warning(f"[SIMU] Accès refusé — UID inconnu : {uid_badge}")
         return False
     try:
         resp = requests.post(
             f"{API_URL}/auth/locker/{LOCKER_ID}/check",
             headers=_headers(),
             json={"card_id": uid_badge},
-            timeout=5
+            timeout=5,
         )
         resp.raise_for_status()
         data = resp.json()
 
         if data.get("allowed"):
             g.utilisateur_actuel = data.get("display_name", "Utilisateur")
-            print(f"✅ Accès autorisé pour : {g.utilisateur_actuel}")
+            g.derniere_raison_acces = None
+            logger.info(f"Accès autorisé : {g.utilisateur_actuel} (UID: {uid_badge})")
             return True
-        else:
-            reason = data.get("reason", "inconnu")
-            print(f"⛔ Accès refusé — raison : {reason}")
-            return False
+
+        reason = data.get("reason", "inconnu")
+        g.derniere_raison_acces = reason
+        logger.warning(f"Accès refusé — raison : {reason} (UID: {uid_badge})")
+        return False
+
     except Exception as e:
-        print(f"❌ Erreur identification : {e}")
+        logger.error(f"Erreur identification badge : {e}")
+        g.derniere_raison_acces = None
         return False
 
 
@@ -150,81 +210,59 @@ def enregistrer_transaction(panier: dict) -> bool:
         return True
     try:
         headers = _headers()
+        success = True
+
+        logger.info(f"Transaction : {g.utilisateur_actuel} — {panier}")
         for nom_item, qte_prise in panier.items():
-            resp = requests.get(
-                f"{API_URL}/stock/",
-                headers=headers,
-                params={"locker_id": LOCKER_ID},
-                timeout=5
-            )
-            resp.raise_for_status()
-            all_stock = resp.json()
-
-            stock_entry = None
-            for entry in all_stock:
-                item_resp = requests.get(f"{API_URL}/items/{entry['item_id']}", headers=headers, timeout=5)
-                if item_resp.ok and item_resp.json().get("name") == nom_item:
-                    stock_entry = entry
-                    break
-
-            if stock_entry is None:
-                print(f"⚠️ Item '{nom_item}' introuvable dans le stock API.")
+            stock_entry_id = g.stock_ids.get(nom_item)
+            if stock_entry_id is None:
+                logger.warning(f"ID stock introuvable pour '{nom_item}' — ignoré.")
+                success = False
                 continue
 
-            nouveau_stock = max(0, stock_entry["quantity"] - qte_prise)
+            nouveau_stock = max(0, g.stocks.get(nom_item, 0) - qte_prise)
             put_resp = requests.put(
-                f"{API_URL}/stock/{stock_entry['id']}",
+                f"{API_URL}/stock/{stock_entry_id}",
                 headers=headers,
                 json={"quantity": nouveau_stock},
-                timeout=5
+                timeout=5,
             )
             if put_resp.ok:
                 g.stocks[nom_item] = nouveau_stock
-                print(f"   -> Débit de {qte_prise} sur {nom_item} (nouveau stock : {nouveau_stock})")
+                logger.info(f"Débit {qte_prise}x {nom_item} → stock restant : {nouveau_stock}")
             else:
-                print(f"⚠️ Échec mise à jour stock pour {nom_item} : {put_resp.status_code}")
+                logger.error(f"Échec mise à jour stock {nom_item} : {put_resp.status_code}")
+                success = False
 
-        return True
+        return success
+
     except Exception as e:
-        print(f"❌ Erreur enregistrement transaction : {e}")
+        logger.error(f"Erreur enregistrement transaction : {e}")
         return False
 
 
 def commander_ouverture_relais() -> bool:
-    if SIMULATION_MODE:
-        print("🛠 [SIMU] Relais activé : CLIC ! (Porte déverrouillée)")
-        return True
     try:
         import RPi.GPIO as GPIO
-        SOLENOID_PIN = 17
+        SOLENOID_PIN = 26
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(SOLENOID_PIN, GPIO.OUT)
         GPIO.output(SOLENOID_PIN, GPIO.HIGH)
-        time.sleep(0.5)
+        time.sleep(5)
         GPIO.output(SOLENOID_PIN, GPIO.LOW)
-        print("✅ Relais activé (GPIO)")
+        logger.info("Relais activé (GPIO)")
         return True
     except Exception as e:
-        print(f"❌ Erreur relais GPIO : {e}")
-        return False
+        logger.warning(f"Relais GPIO indisponible : {e}")
+        return True  # ne bloque pas le flux si GPIO absent
 
 
 def verifier_etat_porte() -> bool:
-    if SIMULATION_MODE:
-        return False
-    try:
-        import RPi.GPIO as GPIO
-        DOOR_PIN = 27
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(DOOR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        closed = GPIO.input(DOOR_PIN) == GPIO.LOW
-        return closed
-    except Exception as e:
-        print(f"❌ Erreur capteur porte GPIO : {e}")
-        return False
+    return False  # capteur Hall non branché — fermeture via timer ou bouton
 
 
 def envoyer_alerte_discord(motif: str = "Armoire non refermée à temps") -> bool:
+    # TODO: endpoint /notifications/discord non implémenté côté backend
     if SIMULATION_MODE:
         print(f"🛠 [SIMU] Alerte Discord : '{motif}' — utilisateur : {g.utilisateur_actuel}")
         return True
@@ -233,7 +271,7 @@ def envoyer_alerte_discord(motif: str = "Armoire non refermée à temps") -> boo
             f"{API_URL}/notifications/discord",
             headers=_headers(),
             json={"utilisateur": g.utilisateur_actuel, "motif": motif},
-            timeout=5
+            timeout=5,
         )
         return resp.ok
     except Exception as e:
@@ -242,6 +280,7 @@ def envoyer_alerte_discord(motif: str = "Armoire non refermée à temps") -> boo
 
 
 def signaler_erreur_stock(nom_item: str) -> bool:
+    # TODO: endpoint /notifications/stock-error non implémenté côté backend
     if SIMULATION_MODE:
         print(f"🛠 [SIMU] Erreur stock signalée pour : '{nom_item}' — utilisateur : {g.utilisateur_actuel}")
         return True
@@ -250,7 +289,7 @@ def signaler_erreur_stock(nom_item: str) -> bool:
             f"{API_URL}/notifications/stock-error",
             headers=_headers(),
             json={"utilisateur": g.utilisateur_actuel, "article": nom_item},
-            timeout=5
+            timeout=5,
         )
         return resp.ok
     except Exception as e:

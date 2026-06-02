@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from src.models import globals as g
-from src.logic.api_service import commander_ouverture_relais, verifier_etat_porte, envoyer_alerte_discord
+from src.logic.api_service import commander_ouverture_relais, verifier_etat_porte, envoyer_alerte_discord, SIMULATION_MODE
+
+SIMU_AUTO_CLOSE_MS = 5000  # fermeture automatique en simulation (5 secondes)
 
 def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
     for widget in fenetre.winfo_children():
@@ -28,13 +30,16 @@ def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
     def fermer_session():
         if g.timer_id:
             fenetre.after_cancel(g.timer_id)
-        if hasattr(g, 'timer_porte_id'):
+            g.timer_id = None
+        if g.timer_porte_id:
             fenetre.after_cancel(g.timer_porte_id)
+            g.timer_porte_id = None
         from src.views.ecran_cloture import ouvrir_ecran_cloture
         ouvrir_ecran_cloture(fenetre, relancer_nav_callback)
 
     g.timer_id = fenetre.after(600000, alerte_discord_et_quitter)
-    checker_porte()
+
+    fenetre.after(SIMU_AUTO_CLOSE_MS, fermer_session)
 
     header = ctk.CTkFrame(fenetre, fg_color="transparent", height=int(H * 0.09))
     header.pack(fill="x", padx=int(W * 0.05), pady=(int(H * 0.02), 0))

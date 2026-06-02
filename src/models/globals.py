@@ -6,6 +6,11 @@ panier = {}
 
 utilisateur_actuel = "Utilisateur"
 stocks = {}
+stock_ids: dict = {}         # item_name → stock_entry_id
+categories_items: dict = {}  # category_name → [item_name, ...]
+items_description: dict = {} # item_name → description
+derniere_raison_acces: str | None = None   # raison du dernier refus badge
+dernier_display_name: str | None = None    # nom lors du dernier accès
 
 # == DIMENSIONS ÉCRAN (calculées au démarrage dans main.py) ==
 SW = 1024

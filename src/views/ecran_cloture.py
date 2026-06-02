@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from src.models import globals as g
+from src.logic.timer_manager import reset_inactivite
+from src.logic.logger import logger
 
 def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
     fenetre.configure(fg_color="white")
@@ -12,20 +14,26 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
     for widget in fenetre.winfo_children():
         widget.destroy()
 
-    def fermer_application():
-        print(f"Session de {g.utilisateur_actuel} terminée. Nettoyage...")
+    def fermer_application(motif: str = ""):
+        if motif:
+            logger.info(f"Clôture session : {g.utilisateur_actuel} — motif : {motif}")
+        else:
+            logger.info(f"Session terminée : {g.utilisateur_actuel}")
         g.panier = {}
         g.utilisateur_actuel = "Utilisateur"
+        g.derniere_raison_acces = None
         if g.timer_id:
             try:
                 fenetre.after_cancel(g.timer_id)
-            except:
+            except Exception:
                 pass
             g.timer_id = None
         for widget in fenetre.winfo_children():
             widget.destroy()
         from src.views.home_view import setup_home_screen
         setup_home_screen(fenetre)
+
+    reset_inactivite(fenetre, lambda: fermer_application("inactivité"), duree_ms=90000)
 
     def reouvrir_armoire():
         from src.views.acces_physique import ouvrir_ecran_physique
@@ -71,7 +79,7 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
         btn_frame, text="Oui, parfait",
         fg_color="#2ECC71", hover_color="#27AE60", text_color="white",
         width=btn_w, height=btn_h, corner_radius=12,
-        font=("Arial", fs, "bold"), command=fermer_application
+        font=("Arial", fs, "bold"), command=lambda: fermer_application("parfait")
     ).pack(side="left", padx=int(W * 0.02))
 
     g.cadre_feedback = None
@@ -139,10 +147,9 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
 
         def envoyer_et_quitter():
             if motif_selectionne.get():
-                print(f"REPORT [{g.utilisateur_actuel}]: {motif_selectionne.get()}")
-                fermer_application()
+                fermer_application(motif_selectionne.get())
             else:
-                print("⚠️ Veuillez sélectionner un motif.")
+                logger.warning("Envoi clôture sans motif sélectionné")
 
         ctk.CTkButton(
             action_container, text="Envoyer",
