@@ -139,7 +139,7 @@ def initialiser_stocks():
 
 def lire_badge_nfc() -> str | None:
     if SIMULATION_MODE:
-        print("🛠 [SIMU] Lecture NFC simulée — UID : 12345")
+        logger.info("[SIMU] Lecture NFC simulee - UID : 12345")
         return "12345"
     try:
         import board
@@ -148,16 +148,16 @@ def lire_badge_nfc() -> str | None:
         i2c = busio.I2C(board.SCL, board.SDA)
         pn532 = PN532_I2C(i2c)
         pn532.SAM_configuration()
-        print("En attente d'un badge NFC...")
+        logger.info("En attente d'un badge NFC...")
         while True:
             uid = pn532.read_passive_target(timeout=0.5)
             if uid is not None:
                 uid_str = ":".join([format(b, "02X") for b in uid])
-                print(f"Badge détecté : {uid_str}")
+                logger.info(f"Badge detecte : {uid_str}")
                 return uid_str
             time.sleep(0.1)
     except Exception as e:
-        print(f"❌ Erreur lecteur NFC : {e}")
+        logger.error(f"Erreur lecteur NFC : {e}")
         return None
 
 
@@ -202,11 +202,11 @@ def identifier_utilisateur(uid_badge: str) -> bool:
 
 def enregistrer_transaction(panier: dict) -> bool:
     if SIMULATION_MODE:
-        print(f"🛠 [SIMU] Envoi transaction pour {g.utilisateur_actuel}...")
+        logger.info(f"[SIMU] Envoi transaction pour {g.utilisateur_actuel}...")
         for item, qte in panier.items():
             if item in g.stocks:
                 g.stocks[item] -= qte
-                print(f"   -> Débit de {qte} sur {item}")
+                logger.info(f"[SIMU] Debit de {qte} sur {item}")
         return True
     try:
         headers = _headers()
@@ -264,7 +264,7 @@ def verifier_etat_porte() -> bool:
 def envoyer_alerte_discord(motif: str = "Armoire non refermée à temps") -> bool:
     # TODO: endpoint /notifications/discord non implémenté côté backend
     if SIMULATION_MODE:
-        print(f"🛠 [SIMU] Alerte Discord : '{motif}' — utilisateur : {g.utilisateur_actuel}")
+        logger.info(f"[SIMU] Alerte Discord : '{motif}' — utilisateur : {g.utilisateur_actuel}")
         return True
     try:
         resp = requests.post(
@@ -275,14 +275,14 @@ def envoyer_alerte_discord(motif: str = "Armoire non refermée à temps") -> boo
         )
         return resp.ok
     except Exception as e:
-        print(f"❌ Erreur alerte Discord : {e}")
+        logger.error(f"Erreur alerte Discord : {e}")
         return False
 
 
 def signaler_erreur_stock(nom_item: str) -> bool:
     # TODO: endpoint /notifications/stock-error non implémenté côté backend
     if SIMULATION_MODE:
-        print(f"🛠 [SIMU] Erreur stock signalée pour : '{nom_item}' — utilisateur : {g.utilisateur_actuel}")
+        logger.info(f"[SIMU] Erreur stock signalee pour : '{nom_item}' — utilisateur : {g.utilisateur_actuel}")
         return True
     try:
         resp = requests.post(
@@ -293,5 +293,5 @@ def signaler_erreur_stock(nom_item: str) -> bool:
         )
         return resp.ok
     except Exception as e:
-        print(f"❌ Erreur signalement stock : {e}")
+        logger.error(f"Erreur signalement stock : {e}")
         return False

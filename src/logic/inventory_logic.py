@@ -1,5 +1,6 @@
 from src.models import globals as g
 from src.views.ecran_selection import ouvrir_ecran_selection
+from src.logic.logger import logger
 
 def toggle_selection(bouton, item_name, fenetre, revenir_callback):
     if g.timer_id:
@@ -9,7 +10,7 @@ def toggle_selection(bouton, item_name, fenetre, revenir_callback):
         from src.views.navigation_view import ecran_navigation
         ecran_navigation(fenetre, revenir_callback, None)
 
-    print(f"➡️ Redirection vers sélection pour : {item_name}")
+    logger.info(f"Redirection vers selection pour : {item_name}")
     ouvrir_ecran_selection(fenetre, item_name, retour_nav)
 
 def ajouter_au_panier(nom_item, quantite, relancer_nav_callback):
@@ -23,11 +24,11 @@ def ajouter_au_panier(nom_item, quantite, relancer_nav_callback):
     stock_max = g.stocks.get(nom_item, 0)
 
     if qte_int > stock_max:
-        print(f"⚠️ Quantité limitée au stock disponible : {stock_max}")
+        logger.warning(f"Quantite limitee au stock disponible : {stock_max}")
         qte_int = stock_max
 
     if qte_int <= 0:
-        print(f"❌ {nom_item} est en rupture de stock.")
+        logger.warning(f"{nom_item} est en rupture de stock.")
         relancer_nav_callback()
         return
 
@@ -36,7 +37,7 @@ def ajouter_au_panier(nom_item, quantite, relancer_nav_callback):
     else:
         g.panier[nom_item] = qte_int
 
-    print(f"✅ Panier mis à jour : {nom_item} x{g.panier[nom_item]}")
+    logger.info(f"Panier mis a jour : {nom_item} x{g.panier[nom_item]}")
 
     update_validation_button()
     relancer_nav_callback()

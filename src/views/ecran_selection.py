@@ -48,7 +48,7 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
     ).place(x=int(W * 0.04), y=int(H * 0.03))
 
     ctk.CTkButton(
-        fenetre, text="✕",
+        fenetre, text="X",
         width=int(W * 0.09), height=int(H * 0.048),
         corner_radius=12, fg_color="#E74C3C", hover_color="#C0392B",
         text_color="white", font=("Arial", fs_title, "bold"),
@@ -144,7 +144,7 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
         )
         cadre_notif.place(relx=0.5, rely=0.78, anchor="center")
         ctk.CTkLabel(
-            cadre_notif, text="✅ Alerte envoyée",
+            cadre_notif, text="Alerte envoyee",
             font=("Arial", fs, "bold"), text_color="white"
         ).place(relx=0.5, rely=0.5, anchor="center")
         btn_alerte.configure(state="disabled", fg_color="#E0E0E0", text="Alerte effectuée", text_color="#888888")
@@ -156,7 +156,7 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
             ajouter_au_panier(nom_item, qte_interne, nettoyer_et_quitter)
 
     btn_alerte = ctk.CTkButton(
-        fenetre, text="⚠️ Erreur Stock",
+        fenetre, text="Erreur Stock",
         width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#E9F904", hover_color="#D4E404", text_color="black",
         font=("Arial", fs, "bold"), command=declencher_alerte

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from src.models import globals as g
 from src.logic.api_service import commander_ouverture_relais, verifier_etat_porte, envoyer_alerte_discord, SIMULATION_MODE
+from src.logic.logger import logger
 
 SIMU_AUTO_CLOSE_MS = 5000  # fermeture automatique en simulation (5 secondes)
 
@@ -14,11 +15,11 @@ def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
 
     ouverture_reussie = commander_ouverture_relais()
     if not ouverture_reussie:
-        print("🚨 ERREUR : Le verrou n'a pas répondu.")
+        logger.error("Relais non repond a l'ouverture")
 
     def checker_porte():
         if verifier_etat_porte():
-            print("✅ Porte refermée détectée. Fin de session.")
+            logger.info("Porte refermee detectee. Fin de session.")
             fermer_session()
         else:
             g.timer_porte_id = fenetre.after(2000, checker_porte)
@@ -45,7 +46,7 @@ def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
     header.pack(fill="x", padx=int(W * 0.05), pady=(int(H * 0.02), 0))
 
     ctk.CTkLabel(
-        header, text=f"👤 Bienvenue {g.utilisateur_actuel} !",
+        header, text=f"Bienvenue {g.utilisateur_actuel} !",
         font=("Arial", fs_title, "bold"), text_color="black"
     ).pack(side="left")
 
@@ -69,7 +70,7 @@ def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
     badge.pack(fill="x", padx=int(W * 0.05), pady=int(H * 0.04))
 
     ctk.CTkLabel(
-        badge, text="⚠  Armoire ouverte",
+        badge, text="Armoire ouverte",
         font=("Arial", int(H * 0.030), "bold"), text_color="black"
     ).place(relx=0.5, rely=0.5, anchor="center")
 
