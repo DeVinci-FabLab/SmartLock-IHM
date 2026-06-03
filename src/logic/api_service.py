@@ -69,6 +69,14 @@ def recuperer_stocks_api() -> dict:
             "Filament PLA 1kg":  "Filament PLA 1.75mm blanc",
             "Résine UV 500ml":   "Résine photopolymère transparente",
         }
+        g.items_threshold = {
+            "Arduino Uno R3": 3, "ESP32 DevKit": 3,
+            "Filament PLA 1kg": 5, "Résine UV 500ml": 2,
+        }
+        g.items_unit = {
+            "Arduino Uno R3": "pce", "ESP32 DevKit": "pce",
+            "Filament PLA 1kg": "kg", "Résine UV 500ml": "ml",
+        }
         return {
             "Arduino Uno R3": 5, "ESP32 DevKit": 8,
             "Filament PLA 1kg": 10, "Résine UV 500ml": 0,
@@ -102,6 +110,8 @@ def recuperer_stocks_api() -> dict:
         stock_ids: dict[str, int] = {}
         categories_items: dict[str, list] = {}
         items_description: dict[str, str] = {}
+        items_threshold: dict[str, int | None] = {}
+        items_unit: dict[str, str] = {}
 
         for entry in stock_entries:
             item_id = entry.get("item_id")
@@ -112,6 +122,8 @@ def recuperer_stocks_api() -> dict:
             stocks[item_name] = entry.get("quantity", 0)
             stock_ids[item_name] = entry["id"]
             items_description[item_name] = item.get("description") or ""
+            items_threshold[item_name] = item.get("low_stock_threshold")
+            items_unit[item_name] = entry.get("unit_measure") or "pce"
             categories_items.setdefault(category_name, [])
             if item_name not in categories_items[category_name]:
                 categories_items[category_name].append(item_name)
@@ -119,6 +131,8 @@ def recuperer_stocks_api() -> dict:
         g.stock_ids = stock_ids
         g.categories_items = categories_items
         g.items_description = items_description
+        g.items_threshold = items_threshold
+        g.items_unit = items_unit
         logger.info(f"Stocks chargés : {len(stocks)} articles / {len(categories_items)} catégories")
         return stocks
 

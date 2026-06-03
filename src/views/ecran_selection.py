@@ -88,7 +88,7 @@ def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
     else:
         ctk.CTkLabel(cadre_photo, text="photo", font=("Arial", fs, "italic"), text_color="gray").place(relx=0.5, rely=0.5, anchor="center")
 
-    unite = "g" if any(x in nom_item.upper() for x in ["PLA", "PETG", "ASA"]) else "pce"
+    unite = g.items_unit.get(nom_item, "pce")
 
     ctk.CTkLabel(
         fenetre, text=f"Reste : {stock_disponible} {unite}",

@@ -40,12 +40,11 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
     header.place(x=0, y=0, relwidth=1)
     header.pack_propagate(False)
 
-    ctk.CTkLabel(header, text="👤", font=("Arial", int(H * 0.032))).pack(side="left", padx=(int(W * 0.03), 0))
     g.titre_nav = ctk.CTkLabel(
         header, text=f"Bienvenue {g.utilisateur_actuel} !",
         font=("Segoe Print", fs_title, "bold"), text_color="black"
     )
-    g.titre_nav.pack(side="left", padx=int(W * 0.02))
+    g.titre_nav.pack(side="left", padx=int(W * 0.04))
 
     g.btn_retour = ctk.CTkButton(
         header, text="Quitter",
@@ -68,7 +67,7 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
     ctk.CTkFrame(fenetre, height=2, fg_color="#E0E0E0").place(x=0, y=footer_y - 2, relwidth=1)
 
     g.btn_voir_panier = ctk.CTkButton(
-        footer, text="🛒 Panier",
+        footer, text="Panier",
         width=int(W * 0.45), height=int(H * 0.075),
         corner_radius=12, fg_color="#E9F904", hover_color="#D4E404",
         text_color="black", font=("Arial", int(H * 0.022), "bold"),
@@ -78,7 +77,7 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
 
     btn_val_size = int(H * 0.075)
     g.btn_valider = ctk.CTkButton(
-        footer, text="✓",
+        footer, text="OK",
         font=("Arial", int(btn_val_size * 0.5), "bold"),
         width=btn_val_size, height=btn_val_size,
         corner_radius=btn_val_size // 2,
@@ -131,12 +130,22 @@ def ecran_navigation(fenetre, revenir_callback, fermer_callback):
                     row_frame.pack(fill="x", padx=int(W * 0.03), pady=int(H * 0.005))
 
                 stock = g.stocks.get(item_name, 0)
+                threshold = g.items_threshold.get(item_name)
+                is_low = threshold is not None and 0 < stock < threshold
                 in_cart = item_name in g.panier and g.panier[item_name] > 0
                 state = "normal" if stock > 0 else "disabled"
-                fg = "#2ECC71" if in_cart else "#F2F2F2"
-                hover = "#27AE60" if in_cart else "#E0E0E0"
-                tc = "white" if in_cart else "black"
-                label = f"{item_name}" if stock > 0 else f"{item_name}\n(Vide)"
+                if in_cart:
+                    fg, hover, tc = "#2ECC71", "#27AE60", "white"
+                elif is_low:
+                    fg, hover, tc = "#F39C12", "#D68910", "white"
+                else:
+                    fg, hover, tc = "#F2F2F2", "#E0E0E0", "black"
+                if stock == 0:
+                    label = f"{item_name}\n(Vide)"
+                elif is_low:
+                    label = f"{item_name}\n(Stock bas)"
+                else:
+                    label = item_name
 
                 btn = ctk.CTkButton(
                     row_frame, text=label,

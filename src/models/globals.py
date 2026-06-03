@@ -6,9 +6,11 @@ panier = {}
 
 utilisateur_actuel = "Utilisateur"
 stocks = {}
-stock_ids: dict = {}         # item_name → stock_entry_id
-categories_items: dict = {}  # category_name → [item_name, ...]
-items_description: dict = {} # item_name → description
+stock_ids: dict = {}          # item_name → stock_entry_id
+categories_items: dict = {}   # category_name → [item_name, ...]
+items_description: dict = {}  # item_name → description
+items_threshold: dict = {}    # item_name → low_stock_threshold (int | None)
+items_unit: dict = {}         # item_name → unit_measure (str)
 derniere_raison_acces: str | None = None   # raison du dernier refus badge
 dernier_display_name: str | None = None    # nom lors du dernier accès
 
@@ -35,14 +37,5 @@ cadre_elec = None
 dict_widgets_panier = {}
 cadre_liste = None
 btn_retour_panier = None
-
-titre_couleur = None
-btn_rouge = None
-btn_bleu = None
-btn_vert = None
-btn_jaune = None
-btn_orange = None
-btn_gris = None
-btn_annuler_couleur = None
 
 cadre_feedback = None

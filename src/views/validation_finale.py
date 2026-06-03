@@ -66,7 +66,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
         ligne_haut.pack(fill="x")
 
         ctk.CTkButton(
-            ligne_haut, text="🗑",
+            ligne_haut, text="X",
             width=int(W * 0.08), height=int(H * 0.050),
             corner_radius=12, fg_color="#FFD1D1", hover_color="#E89595",
             text_color="#E74C3C", font=("Arial", int(H * 0.025)),
@@ -139,7 +139,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     btn_h = int(H * 0.062)
 
     ctk.CTkButton(
-        fenetre, text="✖ Annuler",
+        fenetre, text="Annuler",
         width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#E74C3C", hover_color="#C0392B", text_color="white",
         font=("Arial", fs, "bold"), command=relancer_nav_callback
@@ -151,7 +151,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
             if not reussite:
                 logger.error(f"Échec transaction : {g.utilisateur_actuel} — {g.panier}")
                 label_err = ctk.CTkLabel(
-                    fenetre, text="⚠️ Erreur d'enregistrement\nRéessayez ou contactez un admin",
+                    fenetre, text="Erreur d'enregistrement\nReessayez ou contactez un admin",
                     font=("Arial", int(g.SH * 0.020), "bold"),
                     text_color="white", fg_color="#E74C3C", corner_radius=10,
                 )

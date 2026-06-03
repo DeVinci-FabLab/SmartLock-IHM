@@ -49,7 +49,7 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
     header.pack(fill="x", padx=int(W * 0.05), pady=(int(H * 0.02), 0))
 
     ctk.CTkLabel(
-        header, text=f"👤 À bientôt {g.utilisateur_actuel} !",
+        header, text=f"À bientôt {g.utilisateur_actuel} !",
         font=("Segoe Print", fs_title, "bold"), text_color="black"
     ).pack(side="left")
 
@@ -118,7 +118,7 @@ def ouvrir_ecran_cloture(fenetre, relancer_nav_callback):
             "Porte restée bloquée",
             "Quantité en stock fausse",
             "Matériel endommagé",
-            "⚠️ Redirection vers panier"
+            "Retour au panier"
         ]
 
         for m in motifs:
