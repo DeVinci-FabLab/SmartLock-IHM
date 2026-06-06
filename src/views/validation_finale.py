@@ -18,6 +18,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     for widget in fenetre.winfo_children():
         widget.destroy()
 
+    # --- SÉCURITÉ ANTI-DÉPASSEMENT --
     for nom in list(g.panier.keys()):
         stock_max = g.stocks.get(nom, 0)
         if g.panier[nom] > stock_max:
@@ -31,6 +32,7 @@ def ouvrir_validation_finale(fenetre, relancer_nav_callback):
     ).place(relx=0.5, rely=0.05, anchor="center")
     ctk.CTkFrame(fenetre, height=2, width=int(W * 0.88), fg_color="#E0E0E0").place(relx=0.5, rely=0.10, anchor="center")
 
+    # --- ZONE SCROLLABLE ---
     scroll_container = ctk.CTkScrollableFrame(
         fenetre, width=int(W * 0.88), height=int(H * 0.62),
         fg_color="transparent",
