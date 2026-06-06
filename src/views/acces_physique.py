@@ -1,60 +1,90 @@
 import customtkinter as ctk
 from src.models import globals as g
+from src.logic.api_service import commander_ouverture_relais, verifier_etat_porte, envoyer_alerte_discord, SIMULATION_MODE
+from src.logic.logger import logger
+
+SIMU_AUTO_CLOSE_MS = 5000  # fermeture automatique en simulation (5 secondes)
 
 def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
-    # 1. Nettoyage de l'écran précédent
+    fenetre.configure(fg_color="white")
     for widget in fenetre.winfo_children():
         widget.destroy()
 
-    # --- LOGIQUE DU TIMER ---
+    W, H = g.SW, g.SH
+    fs = int(H * 0.022)
+    fs_title = int(H * 0.026)
+
+    ouverture_reussie = commander_ouverture_relais()
+    if not ouverture_reussie:
+        logger.error("Relais non repond a l'ouverture")
+
+    def checker_porte():
+        if verifier_etat_porte():
+            logger.info("Porte refermee detectee. Fin de session.")
+            fermer_session()
+        else:
+            g.timer_porte_id = fenetre.after(2000, checker_porte)
+
     def alerte_discord_et_quitter():
-        print("🚨 NOTIFICATION DISCORD : L'armoire n'a pas été refermée à temps !")
+        envoyer_alerte_discord(motif="Armoire non refermée après 10 minutes")
         fermer_session()
 
     def fermer_session():
         if g.timer_id:
             fenetre.after_cancel(g.timer_id)
-        # AU LIEU DE REVENIR A LA NAV, ON VA A L'ECRAN DE CLOTURE
+            g.timer_id = None
+        if g.timer_porte_id:
+            fenetre.after_cancel(g.timer_porte_id)
+            g.timer_porte_id = None
         from src.views.ecran_cloture import ouvrir_ecran_cloture
         ouvrir_ecran_cloture(fenetre, relancer_nav_callback)
 
-    # On lance le timer de sécurité
     g.timer_id = fenetre.after(600000, alerte_discord_et_quitter)
 
-    # --- INTERFACE GRAPHIQUE ---
-    header = ctk.CTkFrame(fenetre, fg_color="transparent", height=60)
-    header.pack(fill="x", padx=20, pady=(10, 0))
-    
-    ctk.CTkLabel(
-        header, text="👤 Bienvenue Johnny !", 
-        font=("Arial", 18, "bold"), text_color="black"
-    ).pack(side="left", padx=10)
+    if SIMULATION_MODE:
+        fenetre.after(SIMU_AUTO_CLOSE_MS, fermer_session)
 
-    ctk.CTkFrame(fenetre, height=2, fg_color="black").pack(fill="x", padx=10)
+    header = ctk.CTkFrame(fenetre, fg_color="transparent", height=int(H * 0.09))
+    header.pack(fill="x", padx=int(W * 0.05), pady=(int(H * 0.02), 0))
+
+    ctk.CTkLabel(
+        header, text=f"Bienvenue {g.utilisateur_actuel} !",
+        font=("Arial", fs_title, "bold"), text_color="black"
+    ).pack(side="left")
+
+    ctk.CTkFrame(fenetre, height=2, fg_color="#E0E0E0").pack(fill="x", padx=int(W * 0.05))
+
+    cadre_w = int(W * 0.86)
+    cadre_h = int(H * 0.60)
 
     cadre_central = ctk.CTkFrame(
-        fenetre, fg_color="white", corner_radius=30, 
-        border_width=2, border_color="black", width=320, height=380
+        fenetre, fg_color="white", corner_radius=12,
+        border_width=1, border_color="#E0E0E0",
+        width=cadre_w, height=cadre_h
     )
-    cadre_central.place(relx=0.5, rely=0.55, anchor="center")
+    cadre_central.place(relx=0.5, rely=0.56, anchor="center")
     cadre_central.pack_propagate(False)
 
-    badge = ctk.CTkFrame(cadre_central, fg_color="#FCE49D", corner_radius=20, height=70, border_width=1, border_color="black")
-    badge.pack(fill="x", padx=25, pady=40)
-    
+    badge = ctk.CTkFrame(
+        cadre_central, fg_color="#E9F904", corner_radius=12,
+        height=int(H * 0.10), border_width=1, border_color="#D4E404"
+    )
+    badge.pack(fill="x", padx=int(W * 0.05), pady=int(H * 0.04))
+
     ctk.CTkLabel(
-        badge, text="⚠  Armoire ouverte", 
-        font=("Arial", 22, "bold"), text_color="black"
+        badge, text="Armoire ouverte",
+        font=("Arial", int(H * 0.030), "bold"), text_color="black"
     ).place(relx=0.5, rely=0.5, anchor="center")
 
     ctk.CTkLabel(
-        cadre_central, 
+        cadre_central,
         text="Veuillez prendre votre\nsélection de l'armoire\net rapidement fermer\nderrière vous.",
-        font=("Arial", 18), text_color="black", justify="center"
-    ).pack(pady=20)
+        font=("Arial", int(H * 0.025)), text_color="black", justify="center"
+    ).pack(pady=int(H * 0.03))
 
     ctk.CTkButton(
-        fenetre, text="[ Simulation : Fermer l'armoire ]", 
-        fg_color="transparent", text_color="gray", hover_color="#EEEEEE",
+        fenetre, text="[ Simulation : Forcer Fermeture ]",
+        fg_color="transparent", hover_color="#F2F2F2",
+        text_color="#AAAAAA", font=("Arial", fs),
         command=fermer_session
     ).place(relx=0.5, rely=0.95, anchor="center")

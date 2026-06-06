@@ -1,53 +1,41 @@
-# src/models/globals.py
+# == ÉTAT MÉTIER ==
 fenetre_principale = None
 timer_id = None
+timer_porte_id = None
 panier = {}
 
-# Accueil
-label_logo = sous_titre1 = trait_accueil = sous_titre2 = btn_simu = None
+utilisateur_actuel = "Utilisateur"
+stocks = {}
+stock_ids: dict = {}          # item_name → stock_entry_id
+categories_items: dict = {}   # category_name → [item_name, ...]
+items_description: dict = {}  # item_name → description
+items_threshold: dict = {}    # item_name → low_stock_threshold (int | None)
+items_unit: dict = {}         # item_name → unit_measure (str)
+derniere_raison_acces: str | None = None   # raison du dernier refus badge
+dernier_display_name: str | None = None    # nom lors du dernier accès
 
-#_____________GESTION DU BACK END (CALL API)_________________________
-# --- INFOS UTILISATEURS ---
-utilisateur_actuel = None 
+# == DIMENSIONS ÉCRAN (calculées au démarrage dans main.py) ==
+SW = 1024
+SH = 600
 
+# == RÉFÉRENCES WIDGETS UI ==
+label_logo = None
+sous_titre1 = None
+trait_accueil = None
+sous_titre2 = None
+btn_simu = None
 
-# --- GESTION DES STOCKS --- IL FAUDRA REFLECHIR AVEC LA PARTIE BACK END ET TOUT
-stocks = {
-    # FILAMENTS
-    "PLA Rouge": 10, "PLA Bleu": 10, "PLA Vert": 10, "PLA Jaune": 10, "PLA Orange": 10, "PLA Gris": 10,
-    "PETG Rouge": 10, "PETG Bleu": 10, "PETG Vert": 10, "PETG Jaune": 10, "PETG Orange": 10, "PETG Gris": 10,
-    "ASA Rouge": 10, "ASA Bleu": 10, "ASA Vert": 10, "ASA Jaune": 10, "ASA Orange": 10, "ASA Gris": 10,
+titre_nav = None
+btn_retour = None
+btn_valider = None
+btn_voir_panier = None
 
-    # TENDANCES 
-    "Item 1": 10, 
-    "Item 2": 10, 
-    "Item 3": 10,
+cadre_tendances = None
+cadre_filaments = None
+cadre_elec = None
 
-    # ELECTRONIQUE 
-    "driver": 10,
-    "moteur": 10
-}
-# --- ÉLÉMENTS PANIER (CRITIQUE) ---
-dict_widgets_panier = {} 
+dict_widgets_panier = {}
 cadre_liste = None
 btn_retour_panier = None
 
-#_____________FIN GESTION DU BACK END (CALL API)_________________________
-
-
-# --- ÉLÉMENTS DE NAVIGATION ---
-titre_nav = trait_nav = btn_retour = btn_valider = None
-bouton_tendance = bouton_filaments = bouton_Electronique = None
-sous_titre_nav1 = trait_tendances = None
-bouton_tendance1 = bouton_tendance2 = bouton_tendance3 = None
-sous_titre_nav2 = trait_filaments = None
-bouton_filament1 = bouton_filament2 = bouton_filament3 = None
-sous_titre_nav3 = trait_electronique = None
-bouton_electronique1 = bouton_electronique2 = None
-btn_voir_panier = None
-cadre_tendances = cadre_filaments = cadre_elec = None
-
-# --- ÉLÉMENTS COULEURS ---
-titre_couleur = btn_annuler_couleur = None
-btn_rouge = btn_bleu = btn_vert = btn_jaune = btn_orange = btn_gris = None
-
+cadre_feedback = None

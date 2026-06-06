@@ -1,169 +1,172 @@
-# src/views/ecran_selection.py
 import customtkinter as ctk
 from src.models import globals as g
+from src.logic.timer_manager import reset_inactivite
+from src.logic.api_service import signaler_erreur_stock
 from tkinter import StringVar
 from PIL import Image
 import os
 
-def ouvrir_selection_quantite(fenetre, nom_item, relancer_nav_callback):
-    """
-    Ouvre l'écran détaillé de sélection de quantité avec image et description dynamiques.
-    """
-    
-    # --- CONFIGURATION FOND ---
-    fenetre.configure(fg_color="white") # Force le fond en blanc pur
+def ouvrir_ecran_selection(fenetre, nom_item, relancer_nav_callback):
+    fenetre.configure(fg_color="white")
+    W, H = g.SW, g.SH
 
-    # --- FONCTION DE NETTOYAGE ---
     def nettoyer_et_quitter():
         for widget in fenetre.winfo_children():
-            widget.place_forget()
+            widget.destroy()
         relancer_nav_callback()
 
     for widget in fenetre.winfo_children():
         widget.place_forget()
 
-    # --- GESTION DU TIMER ---
-    def relancer_timer():
-        if g.timer_id:
-            fenetre.after_cancel(g.timer_id)
-        g.timer_id = fenetre.after(90000, nettoyer_et_quitter)
+    reset_inactivite(fenetre, nettoyer_et_quitter)
 
-    relancer_timer()
-
-    # --- LOGIQUE DE STOCK RÉEL ---
     stock_disponible = g.stocks.get(nom_item, 0)
-    var_qte = StringVar(value="+ 2") 
-    qte_interne = 2
+    qte_interne = min(1, stock_disponible) if stock_disponible > 0 else 0
+    var_qte = StringVar(value=f"+{qte_interne}")
 
     def modifier_quantite(delta):
         nonlocal qte_interne
         nouvelle_qte = qte_interne + delta
         if 1 <= nouvelle_qte <= stock_disponible:
             qte_interne = nouvelle_qte
-            var_qte.set(f"+ {qte_interne}")
-            relancer_timer()
+            var_qte.set(f"+{qte_interne}")
+            reset_inactivite(fenetre, nettoyer_et_quitter)
 
-    # --- 1. HEADER---
+    fs = int(H * 0.020)
+    fs_title = int(H * 0.024)
+
+    # Image réduite — max 30% de W et 32% de H
+    photo_w = int(W * 0.30)
+    photo_h = int(H * 0.32)
+    x_photo = int(W * 0.04)
+    y_photo = int(H * 0.12)
+    x_info  = int(W * 0.42)
+
     ctk.CTkLabel(
-        fenetre, text=f"Configuration : {nom_item}", 
-        font=("Segoe Print", 15, "bold"), text_color="black", anchor="w"
-    ).place(x=20, y=20) 
+        fenetre, text=f"Configuration : {nom_item}",
+        font=("Segoe Print", fs_title, "bold"), text_color="black"
+    ).place(x=int(W * 0.04), y=int(H * 0.03))
 
     ctk.CTkButton(
-        fenetre, text="✕", width=30, height=30, corner_radius=8,
-        fg_color="#E74C3C", text_color="white", hover_color="#C0392B",
-        font=("Arial", 14, "bold"), command=nettoyer_et_quitter
-    ).place(x=350, y=15, anchor="ne") 
+        fenetre, text="X",
+        width=int(W * 0.09), height=int(H * 0.048),
+        corner_radius=12, fg_color="#E74C3C", hover_color="#C0392B",
+        text_color="white", font=("Arial", fs_title, "bold"),
+        command=nettoyer_et_quitter
+    ).place(x=int(W * 0.97), y=int(H * 0.025), anchor="ne")
 
-    # --- 2. LOGIQUE DYNAMIQUE (IMAGE & DESCRIPTION) ---
-    base_path = r"C:\Users\loish\.vscode\SmartLock-IHM\images"
-    nom_item_upper = nom_item.upper()
-    
-    # Dictionnaire des descriptions
-    DESCRIPTIONS = {
-        "PLA": "Matériau idéal pour les objets esthétiques et la précision. Attention, il est fragile et se déforme au-delà de 60°C.",
-        "PETG": "Combine facilité d'impression et haute résistance aux chocs. Parfait pour les pièces fonctionnelles solides et flexibles.",
-        "ASA": "Matériau robuste résistant aux UV et aux intempéries. Idéal pour l'extérieur et les hautes températures, mais plus complexe à imprimer."
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(current_dir))
+    base_path = os.path.join(project_root, "assets", "images")
+
+    img_map = {
+        "ASA": "image_ASA.png", "PETG": "image_PETG.png",
+        "PLA": "image_PLA.jpg",
     }
+    fichier = "placeholder.png"
+    for key in img_map:
+        if key.upper() in nom_item.upper():
+            fichier = img_map[key]
+            break
 
-    if "ASA" in nom_item_upper:
-        fichier = "image_ASA.png"
-        desc_text = DESCRIPTIONS["ASA"]
-    elif "PETG" in nom_item_upper:
-        fichier = "image_PETG.png"
-        desc_text = DESCRIPTIONS["PETG"]
-    else:
-        fichier = "image_PLA.jpg" 
-        desc_text = DESCRIPTIONS["PLA"]
-    
-    chemin_complet = os.path.join(base_path, fichier)
-    
+    desc_text = g.items_description.get(nom_item, "Pas de description disponible.")
+
     try:
-        img_pil = Image.open(chemin_complet)
-        photo_item = ctk.CTkImage(light_image=img_pil, size=(140, 170))
-    except Exception as e:
-        print(f"Erreur : Impossible de charger {chemin_complet} -> {e}")
+        img_pil = Image.open(os.path.join(base_path, fichier))
+        photo_item = ctk.CTkImage(light_image=img_pil, size=(photo_w, photo_h))
+    except:
         photo_item = None
 
     cadre_photo = ctk.CTkFrame(
-        fenetre, width=150, height=180, corner_radius=15, 
-        fg_color="white", border_width=1, border_color="#E0E0E0"
+        fenetre, width=photo_w + 16, height=photo_h + 16,
+        corner_radius=12, fg_color="white", border_width=1, border_color="#E0E0E0"
     )
-    cadre_photo.place(x=20, y=85)
+    cadre_photo.place(x=x_photo, y=y_photo)
 
     if photo_item:
         ctk.CTkLabel(cadre_photo, image=photo_item, text="").place(relx=0.5, rely=0.5, anchor="center")
     else:
-        ctk.CTkLabel(cadre_photo, text="photo", font=("Arial", 16, "italic"), text_color="gray30").place(relx=0.5, rely=0.5, anchor="center")
+        ctk.CTkLabel(cadre_photo, text="photo", font=("Arial", fs, "italic"), text_color="gray").place(relx=0.5, rely=0.5, anchor="center")
 
-    # --- 3. SECTION DROITE (Infos + Boutons Gris) ---
-    ctk.CTkLabel(fenetre, text=f"Reste : {stock_disponible} g", font=("Arial", 14, "bold"), text_color="black").place(x=190, y=95)
-    ctk.CTkLabel(fenetre, text="Quantité :", font=("Arial", 14), text_color="black").place(x=190, y=130)
+    unite = g.items_unit.get(nom_item, "pce")
 
-    cadre_selecteur = ctk.CTkFrame(fenetre, width=130, height=50, corner_radius=10, fg_color="transparent")
-    cadre_selecteur.place(x=190, y=160)
+    ctk.CTkLabel(
+        fenetre, text=f"Reste : {stock_disponible} {unite}",
+        font=("Arial", fs, "bold"), text_color="black"
+    ).place(x=x_info, y=int(H * 0.14))
 
+    ctk.CTkLabel(
+        fenetre, text="Quantité :", font=("Arial", fs), text_color="black"
+    ).place(x=x_info, y=int(H * 0.22))
+
+    # Sélecteur contenu dans W - x_info - marge droite
+    sel_w = int(W * 0.50)
+    sel_h = int(H * 0.080)
+    btn_sel = int(sel_w * 0.30)
+    sel_w = btn_sel * 3 + 20
+
+    cadre_selecteur = ctk.CTkFrame(fenetre, width=sel_w, height=sel_h, corner_radius=12, fg_color="#F2F2F2")
+    cadre_selecteur.place(x=x_info - 10, y=int(H * 0.29))
+
+    marge = (sel_w - btn_sel * 3) // 2
     ctk.CTkButton(
-        cadre_selecteur, text="-", width=40, height=40, corner_radius=10,
-        fg_color="#F2F2F2", text_color="black", hover_color="#CCCCCC", # Gris très clair
-        font=("Arial", 18, "bold"), command=lambda: modifier_quantite(-1)
-    ).place(x=0, y=5)
-
-    ctk.CTkLabel(cadre_selecteur, textvariable=var_qte, width=40, font=("Arial", 16, "bold"), text_color="black").place(x=45, y=5)
-
+        cadre_selecteur, text="-", width=btn_sel, height=sel_h - 8,
+        corner_radius=12, fg_color="#E0E0E0", hover_color="#CCCCCC",
+        text_color="black", font=("Arial", int(H * 0.028), "bold"),
+        command=lambda: modifier_quantite(-1)
+    ).place(x=marge, y=4)
+    ctk.CTkLabel(
+        cadre_selecteur, textvariable=var_qte, width=btn_sel,
+        font=("Arial", int(H * 0.024), "bold"), text_color="black"
+    ).place(x=marge + btn_sel, y=4)
     ctk.CTkButton(
-        cadre_selecteur, text="+", width=40, height=40, corner_radius=10,
-        fg_color="#F2F2F2", text_color="black", hover_color="#CCCCCC", # Gris très clair
-        font=("Arial", 18, "bold"), command=lambda: modifier_quantite(1)
-    ).place(x=90, y=5)
+        cadre_selecteur, text="+", width=btn_sel, height=sel_h - 8,
+        corner_radius=12, fg_color="#E0E0E0", hover_color="#CCCCCC",
+        text_color="black", font=("Arial", int(H * 0.028), "bold"),
+        command=lambda: modifier_quantite(1)
+    ).place(x=marge + btn_sel * 2, y=4)
 
-    # --- 4. SECTION DESCRIPTION ---
-    label_desc = ctk.CTkLabel(
-        fenetre, 
-        text=f"Propriétés : {desc_text}", 
-        font=("Arial", 14), 
-        text_color="black", 
-        wraplength=340, 
-        justify="left"
-    )
-    label_desc.place(x=20, y=290)
+    # Description sous l'image et le sélecteur
+    ctk.CTkLabel(
+        fenetre, text=f"Propriétés : {desc_text}",
+        font=("Arial", int(H * 0.018)), text_color="#444444",
+        wraplength=int(W * 0.90), justify="left"
+    ).place(x=int(W * 0.04), y=int(H * 0.49))
 
-    # --- LOGIQUE ALERTE UNIQUE ---
-    alerte_envoyee = False
+    btn_w = int(W * 0.40)
+    btn_h = int(H * 0.068)
 
     def declencher_alerte():
-        nonlocal alerte_envoyee
-        if not alerte_envoyee:
-            alerte_envoyee = True
-            cadre_notif = ctk.CTkFrame(fenetre, width=320, height=40, corner_radius=8, fg_color="#777777")
-            cadre_notif.place(relx=0.5, y=380, anchor="n") 
-            
-            ctk.CTkLabel(
-                cadre_notif, text="✅ Alerte envoyée", 
-                font=("Arial", 12, "bold"), text_color="white"
-            ).place(relx=0.5, rely=0.5, anchor="center")
-            
-            btn_alerte.configure(state="disabled", fg_color="#BDC3C7", text="Alerte effectuée")
+        signaler_erreur_stock(nom_item)
+        cadre_notif = ctk.CTkFrame(
+            fenetre, width=int(W * 0.60), height=int(H * 0.06),
+            corner_radius=12, fg_color="#444444"
+        )
+        cadre_notif.place(relx=0.5, rely=0.78, anchor="center")
+        ctk.CTkLabel(
+            cadre_notif, text="Alerte envoyee",
+            font=("Arial", fs, "bold"), text_color="white"
+        ).place(relx=0.5, rely=0.5, anchor="center")
+        btn_alerte.configure(state="disabled", fg_color="#E0E0E0", text="Alerte effectuée", text_color="#888888")
+        fenetre.after(3000, lambda: cadre_notif.destroy() if cadre_notif.winfo_exists() else None)
 
-    # --- 5. LOGIQUE VALIDATION ---
     def valider():
-        if 0 < qte_interne <= stock_disponible:
-            g.panier[nom_item] = g.panier.get(nom_item, 0) + qte_interne
-            from src.logic.inventory_logic import update_validation_button
-            update_validation_button()
-            nettoyer_et_quitter()
+        if qte_interne > 0:
+            from src.logic.inventory_logic import ajouter_au_panier
+            ajouter_au_panier(nom_item, qte_interne, nettoyer_et_quitter)
 
-    # --- 6. BOUTONS BAS ---
     btn_alerte = ctk.CTkButton(
-        fenetre, text="⚠️ Alerte stock ⚠️", width=150, height=45, corner_radius=15,
+        fenetre, text="Erreur Stock",
+        width=btn_w, height=btn_h, corner_radius=12,
         fg_color="#E9F904", hover_color="#D4E404", text_color="black",
-        font=("Arial", 14, "bold"), command=declencher_alerte
+        font=("Arial", fs, "bold"), command=declencher_alerte
     )
-    btn_alerte.place(x=20, y=465)
+    btn_alerte.place(x=int(W * 0.04), rely=0.94, anchor="sw")
 
-    btn_confirmer = ctk.CTkButton(
-        fenetre, text="Ajouter au Panier", width=150, height=45, corner_radius=15,
-        fg_color="#2ECC71", hover_color="#27AE60", text_color="black",
-        font=("Arial", 14, "bold"), command=valider
-    )
-    btn_confirmer.place(x=190, y=465)
+    ctk.CTkButton(
+        fenetre, text="Ajouter au Panier",
+        width=btn_w, height=btn_h, corner_radius=12,
+        fg_color="#2ECC71", hover_color="#27AE60", text_color="white",
+        font=("Arial", fs, "bold"), command=valider,
+        state="normal" if stock_disponible > 0 else "disabled"
+    ).place(x=int(W * 0.54), rely=0.94, anchor="sw")

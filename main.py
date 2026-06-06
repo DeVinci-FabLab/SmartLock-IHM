@@ -1,29 +1,39 @@
+import tkinter
 import customtkinter as ctk
 from src.models import globals as g
 from src.views.home_view import setup_home_screen, reset_timer
 from src.logic.api_service import initialiser_stocks
+from src.logic.logger import logger
+
+# Patch CTkButton.destroy pour Python 3.13 (bug _font dans CTk 5.2.2)
+_orig_btn_destroy = ctk.CTkButton.destroy
+def _safe_btn_destroy(self):
+    try:
+        _orig_btn_destroy(self)
+    except AttributeError:
+        tkinter.Frame.destroy(self)
+ctk.CTkButton.destroy = _safe_btn_destroy
 
 def main():
-    # --- CONFIGURATION FENÊTRE PRINCIPALE ---
     fenetre = ctk.CTk()
     g.fenetre_principale = fenetre
-    fenetre.geometry('360x550') 
-    fenetre.title('Écran de l\'armoire')
+
+    fenetre.title('SmartLock - Écran Armoire')
     fenetre.configure(fg_color="white")
     fenetre.resizable(False, False)
 
-    # --- INITIALISATION API ---
-    print("Démarrage : Synchronisation avec le serveur...")
-    initialiser_stocks()
+    g.SW = 600
+    g.SH = 1024
+    fenetre.geometry(f'{g.SW}x{g.SH}')
 
-    # --- INITIALISATION IHM ---
+    try:
+        initialiser_stocks()
+        logger.info("Stocks initialises avec succes au demarrage.")
+    except Exception as e:
+        logger.error(f"Erreur lors de l'initialisation des stocks : {e}")
 
     setup_home_screen(fenetre)
-
-    # Lancer le timer d'inactivité initial
     reset_timer(fenetre)
-
-    # --- BOUCLE PRINCIPALE ---
     fenetre.mainloop()
 
 if __name__ == "__main__":
