@@ -6,6 +6,7 @@ from src.logic.logger import logger
 SIMU_AUTO_CLOSE_MS = 5000  # fermeture automatique en simulation (5 secondes)
 
 def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
+    fenetre.configure(fg_color="white")
     for widget in fenetre.winfo_children():
         widget.destroy()
 
@@ -40,7 +41,8 @@ def ouvrir_ecran_physique(fenetre, relancer_nav_callback):
 
     g.timer_id = fenetre.after(600000, alerte_discord_et_quitter)
 
-    fenetre.after(SIMU_AUTO_CLOSE_MS, fermer_session)
+    if SIMULATION_MODE:
+        fenetre.after(SIMU_AUTO_CLOSE_MS, fermer_session)
 
     header = ctk.CTkFrame(fenetre, fg_color="transparent", height=int(H * 0.09))
     header.pack(fill="x", padx=int(W * 0.05), pady=(int(H * 0.02), 0))

@@ -167,9 +167,9 @@ xset s off
 xset -dpms
 xset s noblank
 OUTPUT=$(xrandr | grep " connected" | head -1 | awk '{print $1}')
-xrandr --output $OUTPUT --rotate right
+xrandr --output $OUTPUT --rotate left
 TOUCH_ID=$(xinput list | grep -i "QDTECH\|MPI7002" | grep -o 'id=[0-9]*' | grep -o '[0-9]*')
-[ -n "$TOUCH_ID" ] && xinput set-prop $TOUCH_ID "Coordinate Transformation Matrix" 0 1 0 -1 0 1 0 0 1
+[ -n "$TOUCH_ID" ] && xinput set-prop $TOUCH_ID "Coordinate Transformation Matrix" 0 -1 1 1 0 0 0 0 1
 while true; do
     cd /home/locker/SmartLock-IHM
     PYTHONUNBUFFERED=1 /home/locker/SmartLock-IHM/venv/bin/python3 main.py >> /home/locker/smartlock.log 2>&1
